@@ -38,9 +38,10 @@ class SignupViewController: UIViewController {
         if checkIfValid(email: email, password: password, password_again: password_again, name: name){
             let parameters: Parameters = [
                 "email": email,
-                "password": password
+                "password": password,
+                "name": name
             ]
-            Alamofire.request("https://thatsmileycompany.com/create_user", method: .post, parameters: parameters).validate().responseJSON { response in
+            Alamofire.request("https://thatsmileycompany.com/create_user", method: .post, parameters: parameters).validate(statusCode: 200..<300).responseJSON { response in
                 switch response.result {
                 case .success:
                     print("Validation Successful")
@@ -50,7 +51,7 @@ class SignupViewController: UIViewController {
                     let CampController = storyBoard.instantiateViewController(withIdentifier: "CampController") as! CampViewController
                     self.present(CampController, animated: true, completion: nil)
                 case .failure:
-                    self.SignupIndicator.text = "Email already in use"
+                    self.SignupIndicator.text = "Server Error"
                 }
             }
         }

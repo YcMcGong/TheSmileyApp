@@ -8,36 +8,63 @@
 
 import UIKit
 import Alamofire
+import SwiftyJSON
 
 struct User {
     var email:String!
+    var target_friend_email:String!
     var login:Bool!
+    var PlaceToSee:String!
 }
+
 var Places = [[String]]()
 class FriendList: NSObject {
     
-    //    static var friendlist:[[String]] = []
-    //
-    //    func addFriend( newFriend:String, emailID: String, ExNum: String){
-    //        FriendList.friendlist[0].append(newFriend) //Name
-    //        FriendList.friendlist[1].append(emailID) //ID
-    //        FriendList.friendlist[2].append(ExNum) //Explore Number
-    //    }
-    //
-    //    func removeFriend( atIndex: Int){
-    //        // Need a remove function to goes back to server
-    //        FriendList.friendlist.remove(at: atIndex)
-    //    }
-    static var friendlist:[String] = []
+    static var friendlist:[[String]] = []
     
-    func addFriend( newFriend:String){
-        FriendList.friendlist.append(newFriend) //Name
+    func initFriend(rows: Int){
+        for _ in stride(from: 0, to: rows, by: 1){
+            FriendList.friendlist.append([])
+        }
+    }
+    func addFriend( newFriend:String, emailID: String, ExNum: String){
+        FriendList.friendlist[0].append(newFriend) //Name
+        FriendList.friendlist[1].append(emailID) //ID
+        FriendList.friendlist[2].append(ExNum) //Explore Number
     }
     
     func removeFriend( atIndex: Int){
         // Need a remove function to goes back to server
-        FriendList.friendlist.remove(at: atIndex)
+        let parameters: Parameters = [
+            "email": FriendList.friendlist[1][atIndex]
+        ]
+        Alamofire.request("https://thatsmileycompany.com/friendlist", method: .delete, parameters: parameters).validate(statusCode: 200..<300).responseJSON { response in
+            switch response.result {
+            case .success:
+                FriendList.friendlist[0].remove(at: atIndex)
+                FriendList.friendlist[1].remove(at: atIndex)
+                FriendList.friendlist[2].remove(at: atIndex)
+            case .failure:
+                print("Fail to delete")
+            }
+        }
     }
+    
+    func removeAllFriend(){
+        FriendList.friendlist.removeAll()
+    }
+    
+    
+//    static var friendlist:[String] = []
+//
+//    func addFriend( newFriend:String){
+//        FriendList.friendlist.append(newFriend) //Name
+//    }
+//
+//    func removeFriend( atIndex: Int){
+//        // Need a remove function to goes back to server
+//        FriendList.friendlist.remove(at: atIndex)
+//    }
 }
 
 var Friends = FriendList()
@@ -82,5 +109,35 @@ class LoginViewController: UIViewController {
                 self.LoginIndicator.text = "Login not successfull, please try again"
             }
         }
+    }
+}
+
+func requestPlaces(email:String, rule:String)
+{
+    //Request and Load Places
+    
+    let parameters: Parameters = [
+        "email": email,
+        "rule" : rule
+    ]
+    Alamofire.request("https://thatsmileycompany.com/map", method: .get, parameters: parameters).validate().responseJSON
+        {   response in
+            switch response.result {
+            case .success:
+                let result = response.result.value
+                let data = JSON(result!)
+                
+                //Load Data to Places
+                Places.removeAll()
+                for (index, place):(String, JSON) in data {
+                    let i = Int(index)!
+                    Places.append([])
+                    Places[i].append(place["url"].stringValue)
+                    Places[i].append(place["lat"].stringValue)
+                    Places[i].append(place["lng"].stringValue)
+                }
+            case .failure:
+                print("empty map")
+            }
     }
 }

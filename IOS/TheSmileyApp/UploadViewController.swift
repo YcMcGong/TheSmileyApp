@@ -12,8 +12,14 @@ import Alamofire
 class UploadViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var IMView: UIImageView!
-    @IBOutlet weak var test_text: UITextField!
-    @IBOutlet weak var act_ind: UIActivityIndicatorView!
+    @IBOutlet weak var attractionNameText: UITextField!
+    @IBOutlet weak var addressText: UITextField!
+    @IBOutlet weak var latText: UITextField!
+    @IBOutlet weak var lngText: UITextField!
+    @IBOutlet weak var introText: UITextView!
+    @IBOutlet weak var errotIndicator: UILabel!
+    
+    
     var upload_image:UIImage!
     
     override func viewDidLoad() {
@@ -44,14 +50,35 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
     }
     
     @IBAction func Upload(_ sender: Any) {
-        let send_text = test_text.text!
+        
+        let name = self.attractionNameText.text!
+        let address = self.addressText.text!
+        let lat = self.latText.text!
+        let lng = self.lngText.text!
+        let intro = self.introText.text!
+        
+//        let imageCover = upload_image.resizeWithWidth(width: 500)!
+//        let imageMarker = upload_image.resizeWithWidth(width: 90)!
+//        let imageCoverData = UIImageJPEGRepresentation(imageCover, 0.9)!
+//        let imageMarkerData = UIImageJPEGRepresentation(imageMarker, 0.9)!
+        let image = UIImageJPEGRepresentation(upload_image, 0.9)!
+        
         Alamofire.upload(
             multipartFormData: { multipartFormData in
-                multipartFormData.append(send_text.data(using: .utf8)!, withName: "text")
-                let imageData = UIImageJPEGRepresentation(self.upload_image, 1.0)!
-                multipartFormData.append(imageData, withName: "image", fileName: "file.jpg", mimeType: "image/jpg")
+                
+                //Attribute Upload
+                multipartFormData.append(name.data(using: .utf8)!, withName: "name")
+                multipartFormData.append(address.data(using: .utf8)!, withName: "address")
+                multipartFormData.append(lat.data(using: .utf8)!, withName: "lat")
+                multipartFormData.append(lng.data(using: .utf8)!, withName: "lng")
+                multipartFormData.append(intro.data(using: .utf8)!, withName: "intro")
+                
+                //Image Upload
+//                multipartFormData.append(imageCoverData, withName: "cover", fileName: "cover.jpg", mimeType: "image/jpg")
+//                multipartFormData.append(imageMarkerData, withName: "marker", fileName: "marker.jpg", mimeType: "image/jpg")
+                multipartFormData.append(image, withName: "cover", fileName: "cover.jpg", mimeType: "image/jpg")
         },
-            to: "https://smileyappios.appspot.com/create/post",
+            to: "https://smileyappios.appspot.com/attraction",
             encodingCompletion: { encodingResult in
                 switch encodingResult {
                 case .success(let upload, _, _):
@@ -60,6 +87,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
                     }
                 case .failure(let encodingError):
                     print(encodingError)
+                    self.errotIndicator.text = "Upload failed, Please try again"
                 }
         }
         )

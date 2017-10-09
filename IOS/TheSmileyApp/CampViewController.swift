@@ -21,6 +21,8 @@ class CampViewController: UIViewController {
         super.viewDidLoad()
         //Request User Infomation
         requestProfileInfo(email:currentUser.email)
+        requestFriendList(email: currentUser.email)
+        requestPlaces(email: currentUser.email, rule:"default")
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,7 +36,7 @@ class CampViewController: UIViewController {
 //                ["https://www.materdei.org/pics/alumni/facebook.png", "-33.870001", "151.21000001"],
 //                ["https://upload.wikimedia.org/wikipedia/commons/d/d5/Japan_small_icon.png", "-33.88", "151.25"]
 //        ]
-        requestPlaces(email: currentUser.email)
+//        requestPlaces(email: currentUser.email, rule:"default")
     }
     
     func requestProfileInfo(email:String)
@@ -58,28 +60,51 @@ class CampViewController: UIViewController {
         }
     }
     
-    func requestPlaces(email:String)
+    func requestFriendList(email:String)
     {
-        //Request and Load Places
-        
+        //Request Friendlist
         let parameters: Parameters = [
             "email": email
         ]
-        Alamofire.request("https://thatsmileycompany.com/map", method: .get, parameters: parameters).responseJSON
+        Alamofire.request("https://thatsmileycompany.com/friendlist", method: .get, parameters: parameters).responseJSON
             {   response in
                 
                 let result = response.result.value
-                let data = JSON(result!)
+                let friends = JSON(result!)
                 
-                //Load Data to Places
-                for (index, place):(String, JSON) in data {
-                    let i = Int(index)!
-                    Places[i][0] = place["url"].stringValue
-                    Places[i][1] = place["lat"].stringValue
-                    Places[i][2] = place["lng"].stringValue
+                //Load Data to Friendlist
+                Friends.removeAllFriend()
+                Friends.initFriend(rows: 3)
+                for (_, friend):(String, JSON) in friends {
+                    Friends.addFriend(newFriend: friend["name"].stringValue, emailID: friend["email"].stringValue, ExNum: friend["explorer_num"].stringValue)
                 }
         }
     }
+    
+//    func requestPlaces(email:String)
+//    {
+//        //Request and Load Places
+//
+//        let parameters: Parameters = [
+//            "email": email,
+//            "rule" : "default"
+//        ]
+//        Alamofire.request("https://thatsmileycompany.com/map", method: .get, parameters: parameters).responseJSON
+//            {   response in
+//
+//                let result = response.result.value
+//                let data = JSON(result!)
+//
+//                //Load Data to Places
+//                Places.removeAll()
+//                for (index, place):(String, JSON) in data {
+//                    let i = Int(index)!
+//                    Places[i][0] = place["url"].stringValue
+//                    Places[i][1] = place["lat"].stringValue
+//                    Places[i][2] = place["lng"].stringValue
+//                }
+//        }
+//    }
     
     
 

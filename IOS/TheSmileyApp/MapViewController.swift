@@ -9,9 +9,6 @@
 import UIKit
 import GoogleMaps
 
-//Pass on values
-var PlaceToSee = String()
-
 //View Functions
 class MapViewController: UIViewController, GMSMapViewDelegate {
     var mapView: GMSMapView!
@@ -55,13 +52,12 @@ class MapViewController: UIViewController, GMSMapViewDelegate {
     override func loadView() {
         // Create a GMSCameraPosition that tells the map to display the
         // coordinate -33.86,151.20 at zoom level 6.
-        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 12.0)
+        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 6.0)
         let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
         mapView.delegate = self
         self.view = mapView
         
-        for place in input{
-
+        for place in Places{
             let marker = GMSMarker()
             let lat = Double(place[1])!
             let lng = Double(place[2])!
@@ -77,7 +73,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate {
     
     func mapView(_ mapView: GMSMapView, didTap marker: GMSMarker) -> Bool
     {
-        PlaceToSee = marker.title!
+        currentUser.PlaceToSee = marker.title!
         let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         let PlaceController = storyBoard.instantiateViewController(withIdentifier: "PlaceController") as! PlaceViewController
         self.present(PlaceController, animated: true, completion: nil)
