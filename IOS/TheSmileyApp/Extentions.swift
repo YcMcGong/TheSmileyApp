@@ -34,3 +34,28 @@ extension UIImage {
     }
 }
 
+extension UIViewController
+{
+    func hideKeyboard()
+    {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(
+            target: self,
+            action: #selector(UIViewController.dismissKeyboard))
+        
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc func dismissKeyboard()
+    {
+        view.endEditing(true)
+    }
+}
+
+extension String
+{
+    func trim() -> String
+    {
+        return self.trimmingCharacters(in: NSCharacterSet.whitespaces)
+    }
+}
+

@@ -24,7 +24,7 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//
+        self.hideKeyboard()
 //        // Do any additional setup after loading the view.
 //        let arr = ["Eggs", "Milk", "Tom"]
 //        for i in arr {

@@ -21,15 +21,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate {
         home_button.addTarget(self, action: #selector(self.GoToHome), for: .touchUpInside)
         home_button.tag=2
         home_button.setTitle("Home", for: [])
-        
-        let create_button: UIButton = UIButton(type: .infoDark)
-        create_button.frame = CGRect(origin: CGPoint(x:0,y:65), size: CGSize(width: 100, height: 25))
-        create_button.addTarget(self, action: #selector(self.CreateAttraction), for: .touchUpInside)
-        create_button.tag=3
-        create_button.setTitle("Create", for: [])
-        
         view.addSubview(home_button)
-        view.addSubview(create_button)
+        
+//        let create_button: UIButton = UIButton(type: .infoDark)
+//        create_button.frame = CGRect(origin: CGPoint(x:0,y:65), size: CGSize(width: 100, height: 25))
+//        create_button.addTarget(self, action: #selector(self.CreateAttraction), for: .touchUpInside)
+//        create_button.tag=3
+//        create_button.setTitle("Create", for: [])
+        
+//        view.addSubview(create_button)
     }
         
     @objc func GoToHome(sender: AnyObject) {
@@ -38,11 +38,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate {
         self.present(CampController, animated: true, completion: nil)
     }
 
-    @objc func CreateAttraction(sender: AnyObject) {
-        let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-        let UploadController = storyBoard.instantiateViewController(withIdentifier: "UploadController") as! UploadViewController
-        self.present(UploadController, animated: true, completion: nil)
-    }
+//    @objc func CreateAttraction(sender: AnyObject) {
+//        let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+//        let UploadController = storyBoard.instantiateViewController(withIdentifier: "UploadController") as! UploadViewController
+//        self.present(UploadController, animated: true, completion: nil)
+//    }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -52,8 +52,22 @@ class MapViewController: UIViewController, GMSMapViewDelegate {
     override func loadView() {
         // Create a GMSCameraPosition that tells the map to display the
         // coordinate -33.86,151.20 at zoom level 6.
-        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 6.0)
+//        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 6.0)
+        let camera = GMSCameraPosition.camera(withLatitude: currentUser.userLat, longitude: currentUser.userLng, zoom: 12.0)
         let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
+        
+        //Usinf Custom Style for the map
+        do {
+            // Set the map style by passing the URL of the local file.
+            if let styleURL = Bundle.main.url(forResource: "style", withExtension: "json") {
+                mapView.mapStyle = try GMSMapStyle(contentsOfFileURL: styleURL)
+            } else {
+                NSLog("Unable to find style.json")
+            }
+        } catch {
+            NSLog("One or more of the map styles failed to load. \(error)")
+        }
+        
         mapView.delegate = self
         self.view = mapView
         

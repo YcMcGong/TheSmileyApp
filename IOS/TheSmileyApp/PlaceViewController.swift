@@ -22,6 +22,7 @@ class PlaceViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.hideKeyboard()
         // Do any additional setup after loading the view.
         GetData()
         
@@ -35,23 +36,6 @@ class PlaceViewController: UIViewController {
 
     func GetData()
     {
-//        Alamofire.request("https://smileyappios.appspot.com").responseJSON
-//        {   response in
-//
-//            let result = response.result.value
-//            let test = JSON(result!)
-//
-//            //Get image
-//            let url = "https://ichef.bbci.co.uk/news/660/cpsprodpb/1325A/production/_88762487_junk_food.jpg"
-//            let icon_url = URL(string: url)!
-//            let data = try? Data(contentsOf: icon_url)
-//            let IMG = UIImage(data: data!)
-//            self.CoverImg.image = IMG
-//
-//            self.AttractionName.text = test["one"].stringValue
-//            self.AddressView.text = test["two"].stringValue
-//        }
-        
         //Request and Load Places
         
         let parameters: Parameters = [
@@ -79,5 +63,21 @@ class PlaceViewController: UIViewController {
         }
 
     }
-
+    
+    @IBAction func LikeIt(_ sender: Any) {
+        let parameters: Parameters = [
+            "attraction": currentUser.PlaceToSee,
+            "like": "like"
+        ]
+        Alamofire.request("https://thatsmileycompany.com/like", method: .post, parameters: parameters)
+    }
+    
+    @IBAction func DislikeIt(_ sender: Any) {
+        let parameters: Parameters = [
+            "attraction": currentUser.PlaceToSee,
+            "like": "dislike"
+        ]
+        Alamofire.request("https://thatsmileycompany.com/like", method: .post, parameters: parameters)
+    }
+    
 }

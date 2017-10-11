@@ -15,6 +15,9 @@ struct User {
     var target_friend_email:String!
     var login:Bool!
     var PlaceToSee:String!
+    var userLat:Double!
+    var userLng:Double!
+    var needLocationUpdate = true
 }
 
 var Places = [[String]]()
@@ -79,9 +82,12 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-        
+        self.hideKeyboard()
+        // Read the stored email and psw
+        do {
+            self.EmailText.text = UserDefaults.standard.string(forKey: "smileyEmail")
+            self.SecretText.text = UserDefaults.standard.string(forKey: "smileyPassword")
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -102,9 +108,14 @@ class LoginViewController: UIViewController {
                 print("Validation Successful")
                 currentUser.email = email
                 currentUser.login = true
+                //Login Success, now store the email and password in app
+                UserDefaults.standard.setValue(email, forKey: "smileyEmail")
+                UserDefaults.standard.setValue(password, forKey: "smileyPassword")
+                //Open the Camp Page
                 let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
                 let CampController = storyBoard.instantiateViewController(withIdentifier: "CampController") as! CampViewController
                 self.present(CampController, animated: true, completion: nil)
+                
             case .failure:
                 self.LoginIndicator.text = "Login not successfull, please try again"
             }
