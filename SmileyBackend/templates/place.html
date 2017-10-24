@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        .fit {
+            max-width: 50%;
+            max-height: 50%;
+        }
+        .center {
+            display: block;
+            margin: auto;
+        }
+    </style>    
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script type="text/javascript" language="JavaScript">
+        function set_body_height()
+        {
+            var wh = $(window).height();
+            $('body').attr('style', 'height:' + wh + 'px;');
+        }
+        $(document).ready(function() {
+            set_body_height();
+            $(window).bind('resize', function() { set_body_height(); });
+        });
+    </script>
+
+    <div>
+        <img id="the_pic" class="center fit" src={{cover}}>
+    </div>
+    <br>
+        <h3> Place Name: </h3>
+        <p>{{name}}</p>
+    <br>
+    <div>
+        <h3> Description: </h3>
+        <p> {{description}} </p>
+    </div>
+    <br>
+    <div>
+        <h3> Adress: </h3>
+        <p> {{address}} </p>
+    </div>
+
+    <form action="/protected" method="get">
+        <button type="submit">Return to Map</button><br>
+    </form>
+</body>
+</html>

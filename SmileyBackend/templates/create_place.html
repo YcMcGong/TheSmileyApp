@@ -1,0 +1,45 @@
+<title> Creating a new place </title>
+<!-- Upload -->
+<div><h1> Create a new place</h1></div>
+<div>
+<form method="POST" enctype="multipart/form-data" action = "create_new_place_post">
+    
+      <div class="form-group">
+        <label for="title">Please name the Attraction</label>
+        <input type="text" name="name" class="form-control"/>
+      </div>
+      <br>
+
+      <div class="form-group">
+        <label for="title">Address or Name of the Attraction (Just for location purpose) </label>
+        <input type="text" name="address" class="form-control"/>
+      </div>
+      <br>
+
+      <div class="form-group">
+        <label for="title">In case of a place with no address, please enter GPS coordinare </label>
+        Lat<input type="text" name="Lat" class="form-control"/>
+        Lng<input type="text" name="Lng" class="form-control"/>
+      </div>
+      <br>
+
+      <div class="form-group">
+        <label for="image">Cover Image</label>
+        <input type="file" name="cover" id="image" class="form-control"/>
+      </div>
+      <br>
+      
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea name="description" id="description" class="form-control" rows="5" cols="100"></textarea>
+      </div>
+      <br>
+
+      <div> 
+        Admin code: 
+        <input type="text" name="code" class="form-control"/>
+      </div>
+      
+      <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
