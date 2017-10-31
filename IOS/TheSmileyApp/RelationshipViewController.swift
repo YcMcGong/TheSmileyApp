@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import Alamofire
+import SwiftyJSON
 
 class FriendViewCell: UITableViewCell {
     @IBOutlet weak var friendEmailText: UILabel!
@@ -23,6 +25,7 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
     @IBOutlet weak var addFriendEmailText: UITextField!
     
     override func viewDidLoad() {
+        print(FriendList.friendlist)
         super.viewDidLoad()
         self.hideKeyboard()
 //        // Do any additional setup after loading the view.
@@ -33,7 +36,7 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        Table.reloadData()
+        print("finish table")
     }
 
     override func didReceiveMemoryWarning() {
@@ -46,7 +49,9 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return FriendList.friendlist[0].count
+        print("count")
+        print(FriendList.friendlist.count)
+        return FriendList.friendlist.count
         
     }
     
@@ -54,9 +59,13 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath) as! FriendViewCell
         
-        cell.friendNameText?.text = FriendList.friendlist[0][indexPath.row]
-        cell.friendEmailText?.text = FriendList.friendlist[1][indexPath.row]
-        cell.friendExplorerNumText?.text = FriendList.friendlist[2][indexPath.row]
+//        cell.friendNameText?.text = FriendList.friendlist[0][indexPath.row]
+//        cell.friendEmailText?.text = FriendList.friendlist[1][indexPath.row]
+//        cell.friendExplorerNumText?.text = FriendList.friendlist[2][indexPath.row]
+        cell.friendNameText?.text = FriendList.friendlist[indexPath.row][0]
+        cell.friendEmailText?.text = FriendList.friendlist[indexPath.row][1]
+        cell.friendExplorerNumText?.text = FriendList.friendlist[indexPath.row][2]
+
         return cell
     }
     
@@ -64,6 +73,7 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
         
         if editingStyle == .delete{
             Friends.removeFriend(atIndex: indexPath.row)
+//            requestFriendList(email: currentUser.email)
             tableView.deleteRows(at: [indexPath], with: .fade)
         }
     }
@@ -76,5 +86,51 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
         let MapController = storyBoard.instantiateViewController(withIdentifier: "MapController") as! MapViewController
         self.present(MapController, animated: true, completion: nil)
     }
+    
+    @IBAction func addFriend(_ sender: Any) {
+        
+        //Request Friendlist
+        let friend_email = self.addFriendEmailText.text!
+        let parameters: Parameters = [
+            "email": friend_email
+        ]
+        Alamofire.request("https://thatsmileycompany.com/friendlist", method: .post, parameters: parameters).responseJSON
+            {   response in
+                }
+        usleep(500000) // Add a 0.5s delay to make sure the database is already correctly updated
+        modifiedToAllowUpdateTable_requestFriendList(email: currentUser.email)
+    }
+    
+    func modifiedToAllowUpdateTable_requestFriendList(email:String)
+    {
+        //Request Friendlist
+        let parameters: Parameters = [
+            "email": email
+        ]
+        Alamofire.request("https://thatsmileycompany.com/friendlist", method: .get, parameters: parameters).validate().responseJSON
+            {   response in
+                switch response.result {
+                case .success:
+                    let result = response.result.value
+                    let friends = JSON(result!)
+                    
+                    //Load Data to Friendlist
+                    Friends.removeAllFriend()
+                    //                    Friends.initFriend(rows: 3) // 3 attraibutes for each friend
+                    for (_, friend):(String, JSON) in friends {
+                        Friends.addFriend(newFriend: friend["name"].stringValue, emailID: friend["email"].stringValue, ExNum: friend["explorer_num"].stringValue)
+                    }
+                    
+                    // Update Table
+//                    self.Table.beginUpdates()
+                    self.Table.insertRows(at: [IndexPath(row: FriendList.friendlist.count-1, section: 0)], with: .automatic)
+//                    self.Table.endUpdates()
+                    
+                case .failure:
+                    print("empty friend")
+                }
+        }
+    }
+    
 
 }

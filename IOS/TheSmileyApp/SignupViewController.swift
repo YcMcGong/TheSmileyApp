@@ -47,6 +47,12 @@ class SignupViewController: UIViewController {
                     print("Validation Successful")
                     currentUser.email = email
                     currentUser.login = true
+                    
+                    //Login Success, now store the email and password in app
+                    UserDefaults.standard.setValue(email, forKey: "smileyEmail")
+                    UserDefaults.standard.setValue(password, forKey: "smileyPassword")
+                    
+                    // redirect to the camp page
                     let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
                     let CampController = storyBoard.instantiateViewController(withIdentifier: "CampController") as! CampViewController
                     self.present(CampController, animated: true, completion: nil)

@@ -80,26 +80,32 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
             let name = self.attractionNameText.text!
             let intro = self.introText.text!
             
-            let imageCover = upload_image.resizeWithWidth(width: 500)!
-            let imageMarker = upload_image.resizeWithWidth(width: 90)!
-            let imageCoverData = UIImageJPEGRepresentation(imageCover, 0.9)!
-            let imageMarkerData = UIImageJPEGRepresentation(imageMarker, 0.9)!
+            let imageCover = upload_image.resizeWithWidth(width: 800)!
+            let imageMarker = upload_image.resizeWithWidth(width: 250)!
+            let imageCoverData = UIImageJPEGRepresentation(imageCover, 1.0)!
+            let imageMarkerData = UIImageJPEGRepresentation(imageMarker, 1.0)!
+            
+//            print(name)
+//            print(intro)
+//            print(self.lat)
+//            print(self.lng.data(using: .utf8))
             
             Alamofire.upload(
                 multipartFormData: { multipartFormData in
                     
                     //Attribute Upload
-                    multipartFormData.append(name.data(using: .utf8)!, withName: "name")
+                    multipartFormData.append(name.data(using: String.Encoding.isoLatin1)!, withName: "name")
                     //                multipartFormData.append(address.data(using: .utf8)!, withName: "address")
-                    multipartFormData.append(self.lat.data(using: .utf8)!, withName: "lat")
-                    multipartFormData.append(self.lng.data(using: .utf8)!, withName: "lng")
-                    multipartFormData.append(intro.data(using: .utf8)!, withName: "intro")
+                    multipartFormData.append(self.lat.data(using: String.Encoding.isoLatin1)!, withName: "lat")
+                    multipartFormData.append(self.lng.data(using: String.Encoding.isoLatin1)!, withName: "lng")
+                    multipartFormData.append(intro.data(using: String.Encoding.isoLatin1)!, withName: "intro")
                     
                     //Image Upload
                     multipartFormData.append(imageCoverData, withName: "cover", fileName: "cover.jpg", mimeType: "image/jpg")
                     multipartFormData.append(imageMarkerData, withName: "marker", fileName: "marker.jpg", mimeType: "image/jpg")
             },
-                to: "https://smileyappios.appspot.com/attraction",
+                to: "https://thatsmileycompany.com/attraction",
+                method: .post,
                 encodingCompletion: { encodingResult in
                     switch encodingResult {
                     case .success(let upload, _, _):

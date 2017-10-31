@@ -8,7 +8,71 @@
 
 import Foundation
 import UIKit
+import SwiftyJSON
+import Alamofire
 
+// set up structures
+struct User {
+    var email:String!
+    var target_friend_email:String!
+    var login:Bool!
+    var PlaceToSee:String!
+    var userLat:Double!
+    var userLng:Double!
+    var needLocationUpdate = true
+    // User Profile
+    var experience:String!
+    var exp_id:String!
+    var name:String!
+}
+
+var Places = [[String]]()
+class FriendList: NSObject {
+    
+    static var friendlist:[[String]] = []
+    
+//    func initFriend(rows: Int){
+//        for _ in stride(from: 0, to: rows, by: 1){
+//            FriendList.friendlist.append([])
+//        }
+//    }
+    func addFriend( newFriend:String, emailID: String, ExNum: String){
+//        FriendList.friendlist[0].append(newFriend) //Name
+//        FriendList.friendlist[1].append(emailID) //ID
+//        FriendList.friendlist[2].append(ExNum) //Explore Number
+        let oneNewFriend:[String] = [newFriend, emailID, ExNum]
+        FriendList.friendlist.append(oneNewFriend)
+    }
+    
+    func removeFriend( atIndex: Int){
+        // Need a remove function to goes back to server
+        let parameters: Parameters = [
+            "email": FriendList.friendlist[atIndex][1]
+        ]
+        
+        FriendList.friendlist.remove(at: atIndex) // Delete the associate row in the Datasource
+        
+        Alamofire.request("https://thatsmileycompany.com/friendlist", method: .delete, parameters: parameters).validate(statusCode: 200..<300).responseJSON { response in
+            switch response.result {
+            case .success:
+//                FriendList.friendlist.remove(at: atIndex)
+                print("delete suceed")
+            case .failure:
+                print("Fail to delete")
+            }
+        }
+    }
+    
+    func removeAllFriend(){
+        FriendList.friendlist.removeAll()
+    }
+}
+
+// create friendlist and user objects
+var Friends = FriendList()
+var currentUser = User()
+
+// extensions
 extension UIImage {
     func resizeWithPercent(percentage: CGFloat) -> UIImage? {
         let imageView = UIImageView(frame: CGRect(origin: .zero, size: CGSize(width: size.width * percentage, height: size.height * percentage)))
@@ -42,6 +106,7 @@ extension UIViewController
             target: self,
             action: #selector(UIViewController.dismissKeyboard))
         
+        tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
     }
     
@@ -56,6 +121,80 @@ extension String
     func trim() -> String
     {
         return self.trimmingCharacters(in: NSCharacterSet.whitespaces)
+    }
+}
+
+// request for updating
+func requestPlaces(email:String, rule:String)
+{
+    //Request and Load Places
+    
+    let parameters: Parameters = [
+        "email": email,
+        "rule" : rule
+    ]
+    Alamofire.request("https://thatsmileycompany.com/map", method: .get, parameters: parameters).validate().responseJSON
+        {   response in
+            switch response.result {
+            case .success:
+                let result = response.result.value
+                let data = JSON(result!)
+                
+                //Load Data to Places
+                Places.removeAll()
+                for (index, place):(String, JSON) in data {
+                    let i = Int(index)!
+                    Places.append([])
+                    Places[i].append(place["url"].stringValue)
+                    Places[i].append(place["lat"].stringValue)
+                    Places[i].append(place["lng"].stringValue)
+                }
+            case .failure:
+                print("empty map")
+            }
+    }
+}
+
+func requestProfileInfo(email:String)
+{
+    //Request User Infomation
+    
+    let parameters: Parameters = [
+        "email": email
+    ]
+    Alamofire.request("https://thatsmileycompany.com/profile", method: .get, parameters: parameters).responseJSON
+        {   response in
+            let result = response.result.value
+            let data = JSON(result!)
+            //Present Data
+            currentUser.exp_id = data["id"].stringValue
+            currentUser.experience = data["experience"].stringValue
+            currentUser.name = data["name"].stringValue
+    }
+}
+
+func requestFriendList(email:String)
+{
+    //Request Friendlist
+    let parameters: Parameters = [
+        "email": email
+    ]
+    Alamofire.request("https://thatsmileycompany.com/friendlist", method: .get, parameters: parameters).validate().responseJSON
+        {   response in
+            switch response.result {
+                case .success:
+                    let result = response.result.value
+                    let friends = JSON(result!)
+                
+                    //Load Data to Friendlist
+                    Friends.removeAllFriend()
+//                    Friends.initFriend(rows: 3) // 3 attraibutes for each friend
+                    for (_, friend):(String, JSON) in friends {
+                        Friends.addFriend(newFriend: friend["name"].stringValue, emailID: friend["email"].stringValue, ExNum: friend["explorer_num"].stringValue)
+                    }
+                case .failure:
+                    print("empty friend")
+            }
     }
 }
 

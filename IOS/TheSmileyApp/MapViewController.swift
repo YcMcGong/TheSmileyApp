@@ -53,8 +53,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate {
         // Create a GMSCameraPosition that tells the map to display the
         // coordinate -33.86,151.20 at zoom level 6.
 //        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 6.0)
-        let camera = GMSCameraPosition.camera(withLatitude: currentUser.userLat, longitude: currentUser.userLng, zoom: 12.0)
+        let camera = GMSCameraPosition.camera(withLatitude: currentUser.userLat, longitude: currentUser.userLng, zoom: 14.0)
         let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
+        mapView.isMyLocationEnabled = true;
+        mapView.settings.myLocationButton = true
         
         //Usinf Custom Style for the map
         do {
@@ -98,7 +100,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate {
     {
         let icon_url = URL(string: url)!
         let data = try? Data(contentsOf: icon_url)
-        let IMG = UIImage(data: data!)
+        let IMG = UIImage(data: data!, scale:2)
         
         return IMG
     }
