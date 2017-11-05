@@ -1,3 +1,4 @@
+# coding=utf-8
 from flask import jsonify
 
 from flask import Flask, render_template, request, redirect, url_for, flash, current_app
@@ -12,6 +13,7 @@ import json
 import os
 import storage
 import datetime
+import logging
 
 app = Flask(__name__)
 
@@ -98,8 +100,16 @@ def create_user():
             cursor = db.cursor()
             cursor.execute("""USE Smiley""") # Specifies the name of DB
             insert_new_user(guest, cursor) # Insert Guest into the DB
+            found_user = fetch_user(email, cursor)
             cursor.close()
             db.close()
+
+            # Automatically log in the use after sign up
+            user = Login()
+            user.id = email
+            user.experience = found_user.experience
+            user.exp_id = found_user.exp_id
+            flask_login.login_user(user)
 
             return jsonify({'status': 'success'}), 201
         else:
@@ -108,6 +118,7 @@ def create_user():
         return "", 400
 
 @app.route('/profile', methods=['GET', 'POST'])
+@flask_login.login_required
 def get_profile():
     if request.method == 'GET':
         # Read data
@@ -119,12 +130,12 @@ def get_profile():
         found_user = fetch_user(flask_login.current_user.id, cursor)
         cursor.close()
         db.close()
-
         return jsonify({'ID':found_user.exp_id, 'experience': found_user.experience, 'name': found_user.name, 'email': found_user.email})
     else:
         return "", 400
 
-@app.route('/friendlist', methods=['GET', 'POST'])
+@app.route('/friendlist', methods=['GET', 'POST', 'DELETE'])
+@flask_login.login_required
 def get_friendlist():
     if request.method == 'GET':
         # if request.form.get('rule') == 'default':
@@ -153,7 +164,7 @@ def get_friendlist():
         return jsonify({'status': 'success'}), 201
 
     elif request.method == 'DELETE':
-        email = request.form.get('email')
+        email = request.args.get('email')
 
         db = connect_to_cloudsql()
         cursor = db.cursor()
@@ -167,6 +178,7 @@ def get_friendlist():
         return "", 400
 
 @app.route('/map', methods=['GET', 'POST'])
+@flask_login.login_required
 def get_map():
     if request.method == 'GET':
         # if request.form.get('rule') == 'default':
@@ -175,19 +187,23 @@ def get_map():
         # test.append({'url':'https://storage.googleapis.com/smileyappios.appspot.com/marker-2017-10-12-002946.jpg', 'lat': '33.7563179', 'lng': '-84.37345149999999'})
         # test.append({'url':'https://storage.googleapis.com/smileyappios.appspot.com/marker-2017-10-09-182320.jpg', 'lat': '33.7036039', 'lng': '-84.39714939999999'})
         
+        rule = request.form.get('rule')
+        if not rule: rule = 'default' # Set default rule
+
         db = connect_to_cloudsql()
         cursor = db.cursor()
         cursor.execute("""USE Smiley""") # Specifies the name of DB
-        data = get_attractions(flask_login.current_user.id, cursor)
+        data = get_attractions(flask_login.current_user.id, rule, cursor)
         cursor.close()
         db.close()
 
-        data.append({'url':'https://storage.googleapis.com/smileyappios.appspot.com/marker-2017-10-10-212652.jpg', 'lat': '33.7926977', 'lng': '-84.36952639999998'})
+        # data.append({'url':'https://storage.googleapis.com/smileyappios.appspot.com/marker-2017-10-10-212652.jpg', 'lat': '33.7926977', 'lng': '-84.36952639999998'})
         return jsonify(data)
     else:
         return "", 400
 
 @app.route('/attraction', methods=['GET', 'POST'])
+@flask_login.login_required
 def create_a_new_place_post():
     if request.method == 'POST':
         # Read Data
@@ -197,21 +213,31 @@ def create_a_new_place_post():
         intro = request.form.get('intro')
         cover_file = request.files.get('cover')
         marker_file = request.files.get('marker')
+
         marker = upload_image_file(marker_file)
         cover = upload_image_file(cover_file)
 
-        score = user.experience
+        # score = flask_login.current_user.experience
         ID = marker
-        email = user.id
-        address = gps_to_address(float(lat), float(lng))
-        date_created = get_date()
-        
-        # Create an attraction
-        attraction = Attraction(ID, name, marker, cover, lat, lng, intro, score, address, email, date_created)
+        email = flask_login.current_user.id
+        address, map_name = gps_to_address(float(lat), float(lng))
 
+        # If the place already exist, use the name from google map
+        if map_name != '_new':
+            name = map_name
+
+        date_created = get_date()
+
+        # Connect to SQL
         db = connect_to_cloudsql()
         cursor = db.cursor()
         cursor.execute("""USE Smiley""") # Specifies the name of DB
+        # Fetch user experience
+        found_user = fetch_user(flask_login.current_user.id, cursor)
+        score = found_user.experience
+        # Create an attraction
+        attraction = Attraction(ID, name, marker, cover, lat, lng, intro, score, address, email, date_created)
+
         insert_new_attraction(attraction, cursor)
         cursor.close()
         db.close()
@@ -223,7 +249,7 @@ def create_a_new_place_post():
         db = connect_to_cloudsql()
         cursor = db.cursor()
         cursor.execute("""USE Smiley""") # Specifies the name of DB
-        ID = request.form.get('attraction')
+        ID = request.args.get('attraction')
         place_info = look_up_place_data(ID, cursor)
 
         # place_info = {
@@ -275,23 +301,27 @@ def upload_image_file(file):
 @app.route('/init_all_this_is_a_secret_key_not_posting_here')
 def init_all_tables():
     
+    db = connect_to_cloudsql()
+    cursor = db.cursor()
+    cursor.execute("""USE Smiley""") # Specifies the name of DB
+
     cursor.execute("""DROP TABLE Users""")
     cursor.execute("""CREATE TABLE Users (
     exp_id varchar(15),
     name varchar(50),
-    email varchar(50),
+    email varchar(50) PRIMARY KEY,
     password varchar(255),
     experience varchar(10)
     )""")
 
     cursor.execute("""DROP TABLE Attractions""")
     cursor.execute("""CREATE TABLE Attractions (
-    ID varchar(255),
+    ID varchar(255) PRIMARY KEY,
     name varchar(255),
     marker varchar(255),
     cover varchar(255),
-    lat varchar(15),
-    lng varchar(15),
+    lat varchar(50),
+    lng varchar(50),
     intro varchar(255),
     score varchar(15),
     address varchar(255),
@@ -321,6 +351,9 @@ def init_all_tables():
     # intro varchar(255),
     # rating varchar(15)
     # )""")
+
+    cursor.close()
+    db.close()
 
     return jsonify({'Set up': 'Done'}), 200
 

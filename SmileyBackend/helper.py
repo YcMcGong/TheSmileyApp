@@ -32,7 +32,18 @@ def gps_to_address(Lat, Lng):
     # import googlemaps
     gmaps = googlemaps.Client(key='AIzaSyBWI6d4t99Hpdxv8DSUXBoPwn1m10QxCCc')
     data = gmaps.reverse_geocode((Lat, Lng))
-    address = ''
-    for i in data[0]['address_components']:
-        address = address + i['short_name'] + '\t'
-    return address
+    # address = ''
+    # for i in data[0]['address_components']:
+    #     address = address + i['short_name'] + '\t'
+    address = data[0]['formatted_address']
+    # print(data)
+    # Check if place existed
+    if data[0]['geometry']['location_type']=='ROOFTOP' or data[0]['geometry']['location_type']=='APPROXIMATE':
+        place_id = data[0]['place_id']
+        test = gmaps.place(place_id)
+        # print(test)
+        # name = gmaps.place(place_id)['name']
+        name = test['result']['name']
+    else:
+        name = '_new'
+    return (address, name)

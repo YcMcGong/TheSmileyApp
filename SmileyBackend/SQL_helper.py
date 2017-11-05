@@ -37,7 +37,7 @@ class Attraction():
         return '<User %r>' % self.name
 
 def Attraction_create(url, Lat, Lng):
-    return {'url': url, 'Lat': Lat, 'Lng': Lng}
+    return {'url': url, 'lat': Lat, 'lng': Lng}
 
 #___________________________________________________________________________________
 """ Access SQL"""
@@ -80,18 +80,53 @@ def fetch_attraction(ID, cursor):
     found_attraction = Attraction( info[0], info[1], info[2], info[3], info[4], info[5], info[6], info[7], info[8], info[9], info[10])
     return found_attraction
 
+""" Read marker for different rules"""
 def read_all_marker(cursor):
     cursor.execute("""SELECT marker, lat, lng FROM Attractions""")
     all_markers = cursor.fetchall()
     # print(all_markers)
     return all_markers
 
-def get_attractions(email, cursor): # Return the attractions for a specific user
-    all_markers = read_all_marker(cursor)
-    data = []
-    for result in all_markers:
-        data.append(Attraction_create(result[0], result[1], result[2]))
-    return data
+def read_all_friends_marker(email, cursor):
+    cursor.execute("""SELECT marker, lat, lng 
+    FROM Attractions
+    INNER JOIN Friends
+    ON Attractions.email = Friends.to_user_email
+    WHERE Friends.by_user_email = %s""", (email,))
+    friend_markers = cursor.fetchall()
+
+    cursor.execute("""SELECT marker, lat, lng
+    FROM Attractions
+    WHERE email = %s""",(flask_login.current_user.id,))
+    my_markers = cursor.fetchall()
+
+    all_markers = friend_markers + my_markers
+
+    return all_markers
+"""________________________________________________________________________"""
+
+def get_attractions(email, rule, cursor): # Return the attractions for a specific user
+
+    if rule == 'readall':
+        print('readall')
+        all_markers = read_all_marker(cursor)
+        data = []
+        for result in all_markers:
+            data.append(Attraction_create(result[0], result[1], result[2]))
+        return data
+    
+    elif rule == 'default':
+        print('found')
+        all_markers = read_all_friends_marker(email, cursor)
+        data = []
+        for result in all_markers:
+            data.append(Attraction_create(result[0], result[1], result[2]))
+        return data
+    
+    else:
+        print('else')
+        return False
+        
 
 def look_up_place_data(ID, cursor):
     # Look up attraction data
@@ -108,13 +143,13 @@ def look_up_place_data(ID, cursor):
     exp_id = poster_data[0]
     expname = poster_data[1]
     # Create json data to return
-    return_data = jsonify({'url':cover, 'Name':name, 'Address': address, 
+    return_data = ({'url':cover, 'Name':name, 'Address': address, 
     'Intro' : intro, 'ExpID': exp_id, 'ExpName': expname})
-    return return_place_json
+    return return_data
 
 # Friends
 def add_follow(by_email, to_email, status, cursor):
-    cursor.execute("""INSERT INTO Friends (by_user_email, to_user_email, realtion) VALUES (%s, %s, %s)""", 
+    cursor.execute("""INSERT INTO Friends (by_user_email, to_user_email, relation) VALUES (%s, %s, %s)""", 
     (by_email, to_email, status))
     cursor.execute("""COMMIT""")
 
