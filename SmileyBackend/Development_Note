@@ -5,3 +5,31 @@ Task:
 2. The way to discover...
 
 	1) You can create a group to follow.
+
+
+How to branch the repo:
+
+1. Install Anaconda
+2. Create an environment
+3. Download the Repo from Github
+Linux:
+	sudo apt-get install libmysqlclient-dev
+Mac:
+	export PATH=$PATH:/usr/local/mysql/bin
+
+Proxy to SQL:
+
+Install:
+	Linux:
+		Download the proxy:
+		wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
+		Make the proxy executable:
+		chmod +x cloud_sql_proxy
+		
+	MacOS:
+		Download the proxy:
+		curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
+		Make the proxy executable:
+		chmod +x cloud_sql_proxy
+Connect:
+	./cloud_sql_proxy -instances=smileyappios:us-east1:smileyappios=tcp:3306
