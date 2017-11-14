@@ -34,4 +34,4 @@ Install:
 		Make the proxy executable:
 		chmod +x cloud_sql_proxy
 Connect:
-	./cloud_sql_proxy -instances=smileyappios:us-east1:smileyappios=tcp:3306
+	./cloud_sql_proxy -instances=smileyappios:us-east1:smileyappios=tcp:3306 -credential_file 
