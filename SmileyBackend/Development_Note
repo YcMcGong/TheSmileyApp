@@ -14,10 +14,16 @@ How to branch the repo:
 1. Install Anaconda
 2. Create an environment
 3. Download the Repo from Github
+
+4. If hasn't, install MySQL on Mac/Linux
+
 Linux:
 	sudo apt-get install libmysqlclient-dev
 Mac:
 	export PATH=$PATH:/usr/local/mysql/bin
+
+5. Install Required pip package
+	pip install -r local_requirement.txt
 
 Proxy to SQL:
 
