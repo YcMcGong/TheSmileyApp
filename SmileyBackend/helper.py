@@ -1,5 +1,6 @@
 import StringIO
 import googlemaps
+import hmac
 # from PIL import Image
 
 """ Image Resize """
@@ -47,3 +48,9 @@ def gps_to_address(Lat, Lng):
     else:
         name = '_new'
     return (address, name)
+
+def hash_password(imput_password_string):
+    SECRET = "imsosecret"    #change this if want to change hash function
+    return hmac.new(SECRET,imput_password_string).hexdigest()
+
+
