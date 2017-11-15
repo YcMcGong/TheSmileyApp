@@ -185,6 +185,7 @@ def get_friendlist():
     else:
         return "", 400
 
+# Map view
 @app.route('/map', methods=['GET', 'POST'])
 @flask_login.login_required
 def get_map():
@@ -210,6 +211,7 @@ def get_map():
     else:
         return "", 400
 
+# Attraction View
 @app.route('/attraction', methods=['GET', 'POST'])
 @flask_login.login_required
 def create_a_new_place_post():
@@ -305,6 +307,29 @@ def upload_image_file(file):
 
     return public_url
 
+# Liking 
+@app.route('/like', methods=['GET', 'POST'])
+@flask_login.login_required
+def like_a_place():
+    if request.method == 'POST':
+        # Read Data
+        attraction = request.form.get('attraction')
+        like = request.form.get('like')
+        email = flask_login.current_user.id
+
+        if attraction and like and email:
+            db = connect_to_cloudsql()
+            cursor = db.cursor()
+            cursor.execute("""USE Smiley""") # Specifies the name of DB
+            add_like(email, attraction, like, cursor)
+            cursor.close()
+            db.close() # Close the cursor and db connection
+            return jsonify({'status': 'success'}), 201
+
+        return "", 400
+        
+    return "", 400
+
 # Function handlers
 @app.route('/init_all_this_is_a_secret_key_not_posting_here')
 def init_all_tables():
@@ -313,38 +338,38 @@ def init_all_tables():
     cursor = db.cursor()
     cursor.execute("""USE Smiley""") # Specifies the name of DB
 
-    cursor.execute("""DROP TABLE Users""")
-    cursor.execute("""CREATE TABLE Users (
-    exp_id varchar(15),
-    name varchar(50),
-    email varchar(50) PRIMARY KEY,
-    password varchar(255),
-    experience varchar(10)
-    )""")
+    # cursor.execute("""DROP TABLE Users""")
+    # cursor.execute("""CREATE TABLE Users (
+    # exp_id varchar(15),
+    # name varchar(50),
+    # email varchar(50) PRIMARY KEY,
+    # password varchar(255),
+    # experience varchar(10)
+    # )""")
 
-    cursor.execute("""DROP TABLE Attractions""")
-    cursor.execute("""CREATE TABLE Attractions (
-    ID varchar(255) PRIMARY KEY,
-    name varchar(255),
-    marker varchar(255),
-    cover varchar(255),
-    lat varchar(50),
-    lng varchar(50),
-    intro varchar(255),
-    score varchar(15),
-    address varchar(255),
-    email varchar(50),
-    date_created varchar(15)
-    )""")
+    # cursor.execute("""DROP TABLE Attractions""")
+    # cursor.execute("""CREATE TABLE Attractions (
+    # ID varchar(255) PRIMARY KEY,
+    # name varchar(255),
+    # marker varchar(255),
+    # cover varchar(255),
+    # lat varchar(50),
+    # lng varchar(50),
+    # intro varchar(255),
+    # score varchar(15),
+    # address varchar(255),
+    # email varchar(50),
+    # date_created varchar(15)
+    # )""")
 
-    cursor.execute("""DROP TABLE Friends""")
-    cursor.execute("""CREATE TABLE Friends (
-    by_user_email varchar(50),
-    to_user_email varchar(50),
-    relation varchar(15)
-    )""")
+    # cursor.execute("""DROP TABLE Friends""")
+    # cursor.execute("""CREATE TABLE Friends (
+    # by_user_email varchar(50),
+    # to_user_email varchar(50),
+    # relation varchar(15)
+    # )""")
 
-    # # cursor.execute("""DROP TABLE Likes""")
+    # cursor.execute("""DROP TABLE Likes""")
     # cursor.execute("""CREATE TABLE Likes (
     # user_email varchar(50),
     # attraction_url varchar(255),

@@ -171,3 +171,24 @@ def show_all_friends(email, cursor):
         friendlist.append({'name': friend[0],'email': friend[1],'explorer_num': friend[2]})
 
     return friendlist
+
+# Likes
+class Like():
+    def __init__(self, user_email, attraction_url, rating):
+        self.user_email = user_email
+        self.attraction_url = attraction_url
+        self.rating = rating
+
+def add_like(user_email, attraction_url, rating, cursor):
+    if not fetch_like(user_email, attraction_url, cursor):
+        cursor.execute("""INSERT INTO Likes (user_email, attraction_url, rating) VALUES (%s, %s, %s)""",(user_email, attraction_url, rating))
+        cursor.execute("""COMMIT""")
+
+def fetch_like(user_email, attraction_url, cursor):
+    # Look up if a like exist
+    cursor.execute("""SELECT user_email, attraction_url, rating 
+    FROM Likes 
+    WHERE user_email = %s 
+    AND attraction_url = %s""",(user_email, attraction_url))
+    data = cursor.fetchone()
+    return data
