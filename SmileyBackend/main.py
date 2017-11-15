@@ -68,7 +68,8 @@ def user_login():
         db.close()
 
         if found_user:  # User located
-            if found_user.password == password:
+            hashed_password = hash_password(password)  #get the hashed password from typed password
+            if found_user.password == hashed_password:  #compare stored hashed password with hased typed password
                 
                 user = Login()
                 user.id = email
@@ -91,10 +92,11 @@ def create_user():
         email = request.form.get('email')
         password = request.form.get('password')
         name = request.form.get('name')
-
+       
         if email and password and name:
             # Create guest
-            guest = User(name = name, email=email, password=password)
+            hashed_password = hash_password(password) #store hashed password after sign up
+            guest = User(name = name, email=email, password=hashed_password)
 
             db = connect_to_cloudsql()
             cursor = db.cursor()
