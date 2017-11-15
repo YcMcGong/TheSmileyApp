@@ -181,7 +181,6 @@ class Like():
 
 def add_like(user_email, attraction_url, rating, cursor):
     if not fetch_like(user_email, attraction_url, cursor):
-        print (fetch_like(user_email, attraction_url, cursor))
         cursor.execute("""INSERT INTO Likes (user_email, attraction_url, rating) VALUES (%s, %s, %s)""",(user_email, attraction_url, rating))
         cursor.execute("""COMMIT""")
 
@@ -192,5 +191,4 @@ def fetch_like(user_email, attraction_url, cursor):
     WHERE user_email = %s 
     AND attraction_url = %s""",(user_email, attraction_url))
     data = cursor.fetchone()
-    print(data)
     return data
