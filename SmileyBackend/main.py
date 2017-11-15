@@ -94,13 +94,19 @@ def create_user():
         name = request.form.get('name')
        
         if email and password and name:
-            # Create guest
-            hashed_password = hash_password(password) #store hashed password after sign up
-            guest = User(name = name, email=email, password=hashed_password)
-
+            # Check if the user has been created
             db = connect_to_cloudsql()
             cursor = db.cursor()
             cursor.execute("""USE Smiley""") # Specifies the name of DB
+            found_user = fetch_user(email, cursor)
+            if found_user:
+                cursor.close()
+                db.close()
+                return "", 400
+            
+            # Create guest
+            hashed_password = hash_password(password) #store hashed password after sign up
+            guest = User(name = name, email=email, password=hashed_password)
             insert_new_user(guest, cursor) # Insert Guest into the DB
             found_user = fetch_user(email, cursor)
             cursor.close()
