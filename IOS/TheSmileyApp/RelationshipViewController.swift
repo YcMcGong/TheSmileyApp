@@ -25,18 +25,11 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
     @IBOutlet weak var addFriendEmailText: UITextField!
     
     override func viewDidLoad() {
-        print(FriendList.friendlist)
         super.viewDidLoad()
         self.hideKeyboard()
-//        // Do any additional setup after loading the view.
-//        let arr = ["Eggs", "Milk", "Tom"]
-//        for i in arr {
-//            Friends.addFriend(newFriend: i)
-//        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        print("finish table")
     }
 
     override func didReceiveMemoryWarning() {
@@ -49,8 +42,6 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print("count")
-        print(FriendList.friendlist.count)
         return FriendList.friendlist.count
         
     }
@@ -59,9 +50,6 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath) as! FriendViewCell
         
-//        cell.friendNameText?.text = FriendList.friendlist[0][indexPath.row]
-//        cell.friendEmailText?.text = FriendList.friendlist[1][indexPath.row]
-//        cell.friendExplorerNumText?.text = FriendList.friendlist[2][indexPath.row]
         cell.friendNameText?.text = FriendList.friendlist[indexPath.row][0]
         cell.friendEmailText?.text = FriendList.friendlist[indexPath.row][1]
         cell.friendExplorerNumText?.text = FriendList.friendlist[indexPath.row][2]
@@ -83,7 +71,7 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
         currentUser.target_friend_email = FriendList.friendlist[1][indexPath.row]
         requestPlaces(email: currentUser.target_friend_email, rule: "showall")
         let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-        let MapController = storyBoard.instantiateViewController(withIdentifier: "MapController") as! MapViewController
+        let MapController = storyBoard.instantiateViewController(withIdentifier: "MapOrListViewController") as! MapOrListViewController
         self.present(MapController, animated: true, completion: nil)
     }
     
@@ -116,15 +104,12 @@ class RelationshipViewController: UIViewController, UITableViewDelegate, UITable
                     
                     //Load Data to Friendlist
                     Friends.removeAllFriend()
-                    //                    Friends.initFriend(rows: 3) // 3 attraibutes for each friend
                     for (_, friend):(String, JSON) in friends {
                         Friends.addFriend(newFriend: friend["name"].stringValue, emailID: friend["email"].stringValue, ExNum: friend["explorer_num"].stringValue)
                     }
                     
                     // Update Table
-//                    self.Table.beginUpdates()
                     self.Table.insertRows(at: [IndexPath(row: FriendList.friendlist.count-1, section: 0)], with: .automatic)
-//                    self.Table.endUpdates()
                     
                 case .failure:
                     print("empty friend")

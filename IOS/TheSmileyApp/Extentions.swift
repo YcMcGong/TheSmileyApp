@@ -27,6 +27,7 @@ struct User {
 }
 
 var Places = [[String]]()
+var PlacesMarker = [UIImage]()
 class FriendList: NSObject {
     
     static var friendlist:[[String]] = []
@@ -142,12 +143,15 @@ func requestPlaces(email:String, rule:String)
                 
                 //Load Data to Places
                 Places.removeAll()
+                PlacesMarker.removeAll()
                 for (index, place):(String, JSON) in data {
                     let i = Int(index)!
                     Places.append([])
                     Places[i].append(place["url"].stringValue)
                     Places[i].append(place["lat"].stringValue)
                     Places[i].append(place["lng"].stringValue)
+                    // Update the image holder
+                    PlacesMarker.append(LoadIMG(url: place["url"].stringValue))
                 }
             case .failure:
                 print("empty map")
@@ -166,8 +170,10 @@ func requestProfileInfo(email:String)
         {   response in
             let result = response.result.value
             let data = JSON(result!)
+            print(data)
+            print("almo")
             //Present Data
-            currentUser.exp_id = data["id"].stringValue
+            currentUser.exp_id = data["ID"].stringValue
             currentUser.experience = data["experience"].stringValue
             currentUser.name = data["name"].stringValue
     }
@@ -196,5 +202,15 @@ func requestFriendList(email:String)
                     print("empty friend")
             }
     }
+}
+
+//Function to load image as UIImage
+func LoadIMG(url: String) -> UIImage!
+{
+    let icon_url = URL(string: url)!
+    let data = try? Data(contentsOf: icon_url)
+    let IMG = UIImage(data: data!, scale:2)
+    
+    return IMG
 }
 

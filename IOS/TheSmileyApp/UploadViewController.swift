@@ -11,15 +11,16 @@ import Alamofire
 import Photos
 
 var uploadStatusIndicator:String!
+
 class UploadViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var IMView: UIImageView!
     @IBOutlet weak var attractionNameText: UITextField!
-//    @IBOutlet weak var addressText: UITextField!
-//    @IBOutlet weak var latText: UITextField!
-//    @IBOutlet weak var lngText: UITextField!
     @IBOutlet weak var introText: UITextView!
     @IBOutlet weak var errotIndicator: UILabel!
+    @IBOutlet weak var uploadButton: UIButton!
+    @IBOutlet weak var chooseButton: UIButton!
+    @IBOutlet weak var backButton: UIButton!
     
     var lat:String!
     var lng:String!
@@ -53,9 +54,6 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
             let opts = PHFetchOptions()
             opts.fetchLimit = 1
             let assets = PHAsset.fetchAssets(withALAssetURLs: [URL], options: opts)
-//            let assets = PHAsset.fetchAssets(withLocalIdentifiers: [URL], options: opts)
-//            print(" i am here")
-//            let assets = PHAsset.fetchAssets(withLocalIdentifiers: [URL], options: opts)
             let asset = assets[0]
             
             if (asset.location?.coordinate.latitude != nil)&&(asset.location?.coordinate.longitude != nil)
@@ -77,25 +75,29 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
     
     @IBAction func Upload(_ sender: Any) {
         if checkIfValid(){
+            
             let name = self.attractionNameText.text!
             let intro = self.introText.text!
             
             let imageCover = upload_image.resizeWithWidth(width: 800)!
-            let imageMarker = upload_image.resizeWithWidth(width: 250)!
+            let imageMarker = upload_image.resizeWithWidth(width: 120)!
             let imageCoverData = UIImageJPEGRepresentation(imageCover, 1.0)!
             let imageMarkerData = UIImageJPEGRepresentation(imageMarker, 1.0)!
             
-//            print(name)
-//            print(intro)
-//            print(self.lat)
-//            print(self.lng.data(using: .utf8))
+            //Indicate uploading
+            self.errotIndicator.textColor = UIColor.green
+            self.errotIndicator.text = "Image is uploading"
+            
+            //Disable user actions
+            self.uploadButton.isEnabled = false
+            self.chooseButton.isEnabled = false
+            self.backButton.isEnabled = false
             
             Alamofire.upload(
                 multipartFormData: { multipartFormData in
                     
                     //Attribute Upload
                     multipartFormData.append(name.data(using: String.Encoding.isoLatin1)!, withName: "name")
-                    //                multipartFormData.append(address.data(using: .utf8)!, withName: "address")
                     multipartFormData.append(self.lat.data(using: String.Encoding.isoLatin1)!, withName: "lat")
                     multipartFormData.append(self.lng.data(using: String.Encoding.isoLatin1)!, withName: "lng")
                     multipartFormData.append(intro.data(using: String.Encoding.isoLatin1)!, withName: "intro")
@@ -112,10 +114,18 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
                         upload.responseJSON { response in
                             debugPrint(response)
                             uploadStatusIndicator = "Upload Success"
+                            // Jump to upload status view
+                            let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                            let UploadStatusView = storyBoard.instantiateViewController(withIdentifier: "UploadStatusView") as! UploadStatusViewController
+                            self.present(UploadStatusView, animated: true, completion: nil)
                         }
                     case .failure(let encodingError):
                         print(encodingError)
                         uploadStatusIndicator = "Upload to server failed, Please try again"
+                        // Jump to upload status view
+                        let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                        let UploadStatusView = storyBoard.instantiateViewController(withIdentifier: "UploadStatusView") as! UploadStatusViewController
+                        self.present(UploadStatusView, animated: true, completion: nil)
                     }
             }
             )
@@ -127,12 +137,11 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
         let testIntro = self.introText.text!.trim()
         if (testName != "")&&(testIntro != "")&&(self.IMView.image != nil)
         {
-            print("sucess")
             return true
         }
         else{
-            print("fail")
-            uploadStatusIndicator = "Upload Failed, all fields are required"
+            self.errotIndicator.textColor = UIColor.red
+            self.errotIndicator.text = "Upload Failed, all fields are required"
             return false
         }
     }

@@ -47,14 +47,39 @@ class LoginViewController: UIViewController {
                 //Login Success, now store the email and password in app
                 UserDefaults.standard.setValue(email, forKey: "smileyEmail")
                 UserDefaults.standard.setValue(password, forKey: "smileyPassword")
-                //Open the Camp Page
-                let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-                let CampController = storyBoard.instantiateViewController(withIdentifier: "CampController") as! CampViewController
-                self.present(CampController, animated: true, completion: nil)
+//                //Open the Camp Page
+//                let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+//                let CampController = storyBoard.instantiateViewController(withIdentifier: "CampController") as! CampViewController
+//                self.present(CampController, animated: true, completion: nil)
+                self.requestProfileInfoWhenLogin(email: currentUser.email)
                 
             case .failure:
                 self.LoginIndicator.text = "Login not successfull, please try again"
             }
+        }
+    }
+    
+    func requestProfileInfoWhenLogin(email:String)
+    {
+        //Request User Infomation
+        
+        let parameters: Parameters = [
+            "email": email
+        ]
+        Alamofire.request("https://thatsmileycompany.com/profile", method: .get, parameters: parameters).responseJSON
+            {   response in
+                let result = response.result.value
+                let data = JSON(result!)
+
+                //Present Data
+                currentUser.exp_id = data["ID"].stringValue
+                currentUser.experience = data["experience"].stringValue
+                currentUser.name = data["name"].stringValue
+                
+                //Open the Camp Page
+                let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                let CampController = storyBoard.instantiateViewController(withIdentifier: "CampController") as! CampViewController
+                self.present(CampController, animated: true, completion: nil)
         }
     }
 }
