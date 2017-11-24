@@ -933,7 +933,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R90-J5-97a">
+                            <containerView opaque="NO" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="R90-J5-97a">
                                 <rect key="frame" x="0.0" y="20" width="375" height="599"/>
                                 <connections>
                                     <segue destination="u2L-AF-MwG" kind="embed" id="Xc0-gr-ehh"/>
@@ -1073,7 +1073,7 @@
         <scene sceneID="ExF-ae-VGH">
             <objects>
                 <viewController id="u2L-AF-MwG" customClass="PlaceWebViewController" customModule="TheSmileyApp" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="f63-Yf-3hb">
+                    <view key="view" userInteractionEnabled="NO" contentMode="scaleToFill" id="f63-Yf-3hb">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="599"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1090,7 +1090,7 @@
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="taQ-hJ-jlP"/>
-        <segue reference="ECW-Wf-BrB"/>
+        <segue reference="gfu-CE-u3f"/>
         <segue reference="hIb-oQ-A0F"/>
         <segue reference="PIj-CR-H8v"/>
     </inferredMetricsTieBreakers>

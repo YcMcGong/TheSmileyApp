@@ -24,7 +24,7 @@ class PlaceViewController: UIViewController {
         super.viewDidLoad()
         self.hideKeyboard()
         // Do any additional setup after loading the view.
-        GetData()
+//        GetData()
         
     }
 
@@ -34,35 +34,35 @@ class PlaceViewController: UIViewController {
     }
     
 
-    func GetData()
-    {
-        //Request and Load Places
-        
-        let parameters: Parameters = [
-            "attraction": currentUser.PlaceToSee
-        ]
-        Alamofire.request("https://thatsmileycompany.com/attraction", method: .get, parameters: parameters).responseJSON
-            {   response in
-                
-                let result = response.result.value
-                let data = JSON(result!)
-                
-                //Load Data to Place View
-                let url = data["url"].stringValue
-                let icon_url = URL(string: url)!
-                let img = try? Data(contentsOf: icon_url)
-                let IMG = UIImage(data: img!)
-                self.CoverImg.image = IMG
-                
-                self.AttractionName.text = data["Name"].stringValue
-                self.AddressView.text = data["Address"].stringValue
-                self.explorerIDText.text = data["ExpID"].stringValue
-                self.explorerNameText.text = data["ExpName"].stringValue
-                self.IntroView.text = data["Intro"].stringValue
-                
-        }
-
-    }
+//    func GetData()
+//    {
+//        //Request and Load Places
+//
+//        let parameters: Parameters = [
+//            "attraction": currentUser.PlaceToSee
+//        ]
+//        Alamofire.request("https://thatsmileycompany.com/attraction", method: .get, parameters: parameters).responseJSON
+//            {   response in
+//
+//                let result = response.result.value
+//                let data = JSON(result!)
+//
+//                //Load Data to Place View
+//                let url = data["url"].stringValue
+//                let icon_url = URL(string: url)!
+//                let img = try? Data(contentsOf: icon_url)
+//                let IMG = UIImage(data: img!)
+//                self.CoverImg.image = IMG
+//
+//                self.AttractionName.text = data["Name"].stringValue
+//                self.AddressView.text = data["Address"].stringValue
+//                self.explorerIDText.text = data["ExpID"].stringValue
+//                self.explorerNameText.text = data["ExpName"].stringValue
+//                self.IntroView.text = data["Intro"].stringValue
+//
+//        }
+//
+//    }
     
     @IBAction func LikeIt(_ sender: Any) {
         let parameters: Parameters = [

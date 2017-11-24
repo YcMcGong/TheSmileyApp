@@ -14,8 +14,7 @@ class PlaceWebViewController: UIViewController, WKNavigationDelegate {
     var webView: WKWebView!
     override func viewDidLoad() {
         super.viewDidLoad()
-//        let url = URL(string: "https://thatsmileycompany.com/LookUpPlace/" + currentUser.PlaceToSee)!
-        let url = URL(string: "https://www.google.com")!
+        let url = URL(string: "https://thatsmileycompany.com/LookUpPlace?attraction=" + currentUser.PlaceToSee)!
         webView.load(URLRequest(url:url))
         webView.allowsBackForwardNavigationGestures = true
         // Do any additional setup after loading the view.

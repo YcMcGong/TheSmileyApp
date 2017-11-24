@@ -50,9 +50,9 @@ class ListView: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
         // Use Image marker holder instead
         cell.attractionImage?.image = PlacesMarker[indexPath.row]
-//        cell.attractionNameText?.text = Places[indexPath.row][3]
-//        cell.discoverText?.text = Places[indexPath.row][4]
-//        cell.ratingText?.text = Places[indexPath.row][5]
+        cell.attractionNameText?.text = Places[indexPath.row][3]
+        cell.discoverText?.text = Places[indexPath.row][4]
+        cell.ratingText?.text = Places[indexPath.row][5]
         return cell
     }
     
