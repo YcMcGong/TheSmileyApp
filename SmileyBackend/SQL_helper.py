@@ -65,13 +65,40 @@ def insert_new_user(User, cursor):
 
 # Attractions
 def insert_new_attraction(attraction, cursor):
-    cursor.execute("""INSERT INTO Attractions (ID, name, marker, cover, lat, lng, intro, score, address, email, date_created) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
-        (attraction.ID, attraction.name, attraction.marker, attraction.cover, 
-         attraction.lat, attraction.lng, attraction.intro, attraction.score, 
-         attraction.address, attraction.email, attraction.date_created))
-    cursor.execute("""COMMIT""")
-    pass
+    cursor.execute("""
+        SELECT 
+        ID, name, marker, cover, lat, lng, intro, score, address, email, date_created
+        FROM 
+        Attractions
+        WHERE 
+        address = %s""",
+        (attraction.address,))
+    info = cursor.fetchone()
+    if info:
+        cursor.execute("""
+            INSERT INTO 
+            Reviews 
+            (user_email, attraction_ID, cover_url, marker_url, intro, rating, date_created)
+            VALUES 
+            (%s, %s, %s, %s, %s, %s, %s)""",
+            (attraction.email, info[0], attraction.cover, attraction.marker, attraction.intro, int(attraction.score), int(attraction.date_created)))
+        cursor.execute("""COMMIT""")
+    else:
+        cursor.execute("""INSERT INTO Attractions (ID, name, marker, cover, lat, lng, intro, score, address, email, date_created)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (attraction.ID, attraction.name, attraction.marker, attraction.cover,
+             attraction.lat, attraction.lng, attraction.intro, attraction.score,
+             attraction.address, attraction.email, attraction.date_created))
+        cursor.execute("""COMMIT""")
+        cursor.execute("""
+            INSERT INTO 
+            Reviews 
+            (user_email, attraction_ID, cover_url, marker_url, intro, rating, date_created)
+            VALUES 
+            (%s, %s, %s, %s, %s, %s, %s)""",
+            (attraction.email, attraction.ID, attraction.cover, attraction.marker, attraction.intro, int(attraction.score), int(attraction.date_created)))
+        cursor.execute("""COMMIT""")
+        pass
 
 def fetch_attraction(ID, cursor):
     cursor.execute("""SELECT ID, name, marker, cover, lat, lng, intro, score, address, email, date_created
@@ -92,49 +119,61 @@ def read_all_friends_marker(email, cursor, ifNews = True):
     if ifNews:
         
         cursor.execute("""
-        SELECT marker, lat, lng, name, discover, score
-        FROM Attractions
-        INNER JOIN
-        (SELECT attraction_ID, max(user_email) as discover, date_created
+        SELECT marker, lat, lng, attraction_name, name as discover, score as rating
         FROM
-        Reviews
-        NATURAL JOIN
-            (
-                SELECT attraction_ID, MAX(date_created) AS date_created
-                FROM 
-                    Reviews
-                    INNER JOIN Friends
-                    ON Reviews.user_email = Friends.to_user_email
-                    WHERE Friends.by_user_email = %s
-                GROUP BY attraction_ID
-            )   AS TB1
-            GROUP BY attraction_ID
-        ) AS TB2
-        ON Attractions.ID = TB2.attraction_ID
+        (SELECT marker, lat, lng, name AS attraction_name, user_email, score
+                FROM Attractions
+                INNER JOIN
+                (SELECT attraction_ID, max(user_email) as user_email, date_created
+                FROM
+                Reviews
+                NATURAL JOIN
+                    (
+                        SELECT attraction_ID, MAX(date_created) AS date_created
+                        FROM 
+                            Reviews
+                            INNER JOIN Friends
+                            ON Reviews.user_email = Friends.to_user_email
+                            WHERE Friends.by_user_email = %s
+                        GROUP BY attraction_ID
+                    )   AS TB1
+                    GROUP BY attraction_ID
+                ) AS TB2
+                ON Attractions.ID = TB2.attraction_ID
+        ) AS TB3
+        INNER JOIN
+        Users
+        ON TB3.user_email = Users.email
         """, (flask_login.current_user.id,))
-        print(flask_login.current_user.id)
+        # print(flask_login.current_user.id)
 
     else:
         cursor.execute("""
-        SELECT marker, lat, lng, name, discover, score
-        FROM Attractions
-        INNER JOIN
-        (SELECT attraction_ID, max(user_email) as discover, date_created
+        SELECT marker, lat, lng, attraction_name, name as discover, score as rating
         FROM
-        Reviews
-        NATURAL JOIN
-            (
-                SELECT attraction_ID, MIN(date_created) AS date_created
-                FROM 
-                    Reviews
-                    INNER JOIN Friends
-                    ON Reviews.user_email = Friends.to_user_email
-                    WHERE Friends.by_user_email = %s
-                GROUP BY attraction_ID
-            )   AS TB1
-            GROUP BY attraction_ID
-        ) AS TB2
-        ON Attractions.ID = TB2.attraction_ID
+        (SELECT marker, lat, lng, name AS attraction_name, user_email, score
+                FROM Attractions
+                INNER JOIN
+                (SELECT attraction_ID, max(user_email) as user_email, date_created
+                FROM
+                Reviews
+                NATURAL JOIN
+                    (
+                        SELECT attraction_ID, MIN(date_created) AS date_created
+                        FROM 
+                            Reviews
+                            INNER JOIN Friends
+                            ON Reviews.user_email = Friends.to_user_email
+                            WHERE Friends.by_user_email = %s
+                        GROUP BY attraction_ID
+                    )   AS TB1
+                    GROUP BY attraction_ID
+                ) AS TB2
+                ON Attractions.ID = TB2.attraction_ID
+        ) AS TB3
+        INNER JOIN
+        Users
+        ON TB3.user_email = Users.email
         """, (flask_login.current_user.id,))
     
     # Fetch all friend markersattractions
@@ -160,7 +199,7 @@ def read_all_friends_marker(email, cursor, ifNews = True):
 def get_attractions(email, rule, cursor): # Return the attractions for a specific user
 
     if rule == 'readall':
-        print('readall')
+        # print('readall')
         all_markers = read_all_marker(cursor)
         data = []
         for result in all_markers:
@@ -168,16 +207,16 @@ def get_attractions(email, rule, cursor): # Return the attractions for a specifi
         return data
     
     elif rule == 'default':
-        print('found')
+        # print('found')
         all_markers = read_all_friends_marker(email, cursor)
         data = []
         for result in all_markers:
-            print(result)
+            # print(result)
             data.append(Attraction_create(result[0], result[1], result[2], result[3], result[4], result[5]))
         return data
     
     else:
-        print('else')
+        # print('else')
         return False
         
 

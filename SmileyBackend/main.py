@@ -77,7 +77,7 @@ def user_login():
                 user.exp_id = found_user.exp_id
 
                 flask_login.login_user(user)
-                print(flask_login.current_user.experience)
+                # print(flask_login.current_user.experience)
                 return jsonify({'status': 'success'}), 201
         return "", 400
 
@@ -215,7 +215,7 @@ def create_a_new_place_post():
 
         marker = upload_image_file(marker_file)
         cover = upload_image_file(cover_file)
-        print(marker)
+        # print(marker)
 
         # score = flask_login.current_user.experience
         ID = marker
@@ -244,20 +244,6 @@ def create_a_new_place_post():
 
         return jsonify({'status': 'success'}), 201
 
-    elif request.method == 'GET':
-        
-        db = connect_to_cloudsql()
-        cursor = db.cursor()
-        cursor.execute("""USE Smiley""") # Specifies the name of DB
-        ID = request.args.get('attraction')
-        print(ID)
-        place_info, reviews_data = look_up_place_data(ID, cursor)
-        cursor.close()
-        db.close()
-
-        rendered_template = render_place_data_template(place_info, reviews_data)
-        return rendered_template
-        # return jsonify(place_info)
     else:
         return '', 404
     # return marker
@@ -318,10 +304,29 @@ def like_a_place():
 # |All Web Relation Content below this line|
 # |________________________________________|
 """
+# No login required
+@app.route('/LookUpPlace', methods=['GET'])
+def request_place_look_up():
+    if request.method == 'GET':
+        
+        db = connect_to_cloudsql()
+        cursor = db.cursor()
+        cursor.execute("""USE Smiley""") # Specifies the name of DB
+        ID = request.args.get('attraction')
+        # print(ID)
+        place_info, reviews_data = look_up_place_data(ID, cursor)
+        cursor.close()
+        db.close()
+
+        rendered_template = render_place_data_template(place_info, reviews_data)
+        return rendered_template
+        # return jsonify(place_info)
+
 def render_place_data_template(place_info, reviews_data):
     
     # return render_template('profile.html', name = found_user.name, email = found_user.email, \
     # goal = found_user.goal, group = json.dumps(data))
+    reviews_data = reviews_data[1:]
     return render_template('place_template.html', place = place_info, reviews = reviews_data)
 
 # Table Setting Functions
