@@ -36,8 +36,8 @@ class Attraction():
     def __repr__(self):
         return '<User %r>' % self.name
 
-def Attraction_create(url, Lat, Lng):
-    return {'url': url, 'lat': Lat, 'lng': Lng}
+def Attraction_create(url, Lat, Lng, name='none', discover='none', rating='none'):
+    return {'url': url, 'lat': Lat, 'lng': Lng, 'name': name, 'discover': discover, 'rating': rating}
 
 #___________________________________________________________________________________
 """ Access SQL"""
@@ -87,24 +87,76 @@ def read_all_marker(cursor):
     # print(all_markers)
     return all_markers
 
-def read_all_friends_marker(email, cursor):
-    cursor.execute("""SELECT marker, lat, lng 
-    FROM Attractions
-    INNER JOIN Friends
-    ON Attractions.email = Friends.to_user_email
-    WHERE Friends.by_user_email = %s""", (email,))
+def read_all_friends_marker(email, cursor, ifNews = True):
+    
+    if ifNews:
+        
+        cursor.execute("""
+        SELECT marker, lat, lng, name, discover, score
+        FROM Attractions
+        INNER JOIN
+        (SELECT attraction_ID, max(user_email) as discover, date_created
+        FROM
+        Reviews
+        NATURAL JOIN
+            (
+                SELECT attraction_ID, MAX(date_created) AS date_created
+                FROM 
+                    Reviews
+                    INNER JOIN Friends
+                    ON Reviews.user_email = Friends.to_user_email
+                    WHERE Friends.by_user_email = %s
+                GROUP BY attraction_ID
+            )   AS TB1
+            GROUP BY attraction_ID
+        ) AS TB2
+        ON Attractions.ID = TB2.attraction_ID
+        """, (flask_login.current_user.id,))
+        print(flask_login.current_user.id)
+
+    else:
+        cursor.execute("""
+        SELECT marker, lat, lng, name, discover, score
+        FROM Attractions
+        INNER JOIN
+        (SELECT attraction_ID, max(user_email) as discover, date_created
+        FROM
+        Reviews
+        NATURAL JOIN
+            (
+                SELECT attraction_ID, MIN(date_created) AS date_created
+                FROM 
+                    Reviews
+                    INNER JOIN Friends
+                    ON Reviews.user_email = Friends.to_user_email
+                    WHERE Friends.by_user_email = %s
+                GROUP BY attraction_ID
+            )   AS TB1
+            GROUP BY attraction_ID
+        ) AS TB2
+        ON Attractions.ID = TB2.attraction_ID
+        """, (flask_login.current_user.id,))
+    
+    # Fetch all friend markersattractions
     friend_markers = cursor.fetchall()
 
-    cursor.execute("""SELECT marker, lat, lng
+    # Fetch attractions created by the user itself
+    cursor.execute("""
+    SELECT marker, lat, lng, att_name as name, name as discover, score
+    FROM Users
+    INNER JOIN
+    (SELECT marker, lat, lng, name as att_name, score, email
     FROM Attractions
-    WHERE email = %s""",(flask_login.current_user.id,))
+    WHERE email =  %s) AS TB1
+    ON Users.email = TB1.email
+    """,(flask_login.current_user.id,))
     my_markers = cursor.fetchall()
 
     all_markers = friend_markers + my_markers
 
     return all_markers
-"""________________________________________________________________________"""
 
+# Return all attractions for a specific user
 def get_attractions(email, rule, cursor): # Return the attractions for a specific user
 
     if rule == 'readall':
@@ -112,7 +164,7 @@ def get_attractions(email, rule, cursor): # Return the attractions for a specifi
         all_markers = read_all_marker(cursor)
         data = []
         for result in all_markers:
-            data.append(Attraction_create(result[0], result[1], result[2]))
+            data.append(Attraction_create(result[0], result[1], result[2], result[3], result[4], result[5]))
         return data
     
     elif rule == 'default':
@@ -120,7 +172,8 @@ def get_attractions(email, rule, cursor): # Return the attractions for a specifi
         all_markers = read_all_friends_marker(email, cursor)
         data = []
         for result in all_markers:
-            data.append(Attraction_create(result[0], result[1], result[2]))
+            print(result)
+            data.append(Attraction_create(result[0], result[1], result[2], result[3], result[4], result[5]))
         return data
     
     else:
@@ -145,7 +198,27 @@ def look_up_place_data(ID, cursor):
     # Create json data to return
     return_data = ({'url':cover, 'Name':name, 'Address': address, 
     'Intro' : intro, 'ExpID': exp_id, 'ExpName': expname})
-    return return_data
+    reviews_data = look_up_reviews_for_a_place(ID, cursor)
+    return (return_data, reviews_data)
+
+def look_up_reviews_for_a_place(ID, cursor):
+    # Look for all reviews for an attraction ranked by DESC date order
+    cursor.execute("""
+    SELECT name, cover_url, intro, date_created
+    FROM
+    (SELECT attraction_ID, user_email, cover_url, intro, date_created FROM Reviews
+    WHERE attraction_ID = %s
+    ) AS Newest
+    LEFT JOIN
+    Users
+    ON Newest.user_email = Users.email
+    ORDER BY date_created DESC
+    """, (ID,))
+    data = cursor.fetchall()
+    reviews_data = []
+    for review in data:
+        reviews_data.append({'username': review[0], 'cover_url': review[1], 'intro': review[2], 'date_created': review[3]})
+    return reviews_data
 
 # Friends
 def add_follow(by_email, to_email, status, cursor):
