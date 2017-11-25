@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        .fit {
+            max-width: 95%;
+            max-height: 70%;
+        }
+        .center {
+            display: block;
+            margin: auto;
+        }
+    </style>    
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script type="text/javascript" language="JavaScript">
+        function set_body_height()
+        {
+            var wh = $(window).height();
+            $('body').attr('style', 'height:' + wh + 'px;');
+        }
+        $(document).ready(function() {
+            set_body_height();
+            $(window).bind('resize', function() { set_body_height(); });
+        });
+    </script>
+
+    <div>
+        <img id="the_pic" class="center fit" src={{place.url}}>
+    </div>
+
+    <div style="margin-left: 1cm">
+    <br>
+        <h3> Place Name: </h3>
+        <p>{{place.Name}}</p>
+    <br>
+        <h3> Description: </h3>
+        <p> {{place.Intro}} </p>
+    <br>
+        <h3> Adress: </h3>
+        <p> {{place.Address}} </p>
+    <br>
+        <h3> Explorer: </h3>
+        <p> {{place.ExpName}} </p>
+    <br>
+        <h3> Exploer id: </h3>
+        <p> {{place.ExpID}} </p>
+    <br>
+    </div>
+
+    <!-- <form action="/protected" method="get">
+        <button type="submit">Return to Map</button><br>
+    </form> -->
+
+    <ul>
+      {% for review in reviews %}
+        <li>
+          <div>
+            <img class="center fit" src={{review.cover_url}}>
+            <br>
+            <h3 style="margin-left: 1cm"> {{ review.username }} </h3>
+            <p style="margin-left: 1cm"> {{ review.date_created }} </p>
+            <p style="margin-left: 1cm"> {{ review.intro }} </p>
+        </div>
+        </li>
+      {% endfor %}  
+  </ul>
+
+  
+</body>
+</html>
