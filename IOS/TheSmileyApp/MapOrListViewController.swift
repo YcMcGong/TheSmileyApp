@@ -13,11 +13,20 @@ class MapOrListViewController: UIViewController {
 
     @IBOutlet weak var MapViewContainer: UIView!
     @IBOutlet weak var ListViewContainer: UIView!
+    @IBOutlet weak var segControl: UISegmentedControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        MapViewContainer.isHidden = false
-        ListViewContainer.isHidden = true
+        if currentControlFlow.ifMap{
+            MapViewContainer.isHidden = false
+            ListViewContainer.isHidden = true
+            segControl.selectedSegmentIndex = 0;
+        }
+        else{
+            MapViewContainer.isHidden = true
+            ListViewContainer.isHidden = false
+            segControl.selectedSegmentIndex = 1;
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -31,10 +40,12 @@ class MapOrListViewController: UIViewController {
         case 0:
             MapViewContainer.isHidden = false
             ListViewContainer.isHidden = true
+            currentControlFlow.ifMap = true
             break
         case 1:
             MapViewContainer.isHidden = true
             ListViewContainer.isHidden = false
+            currentControlFlow.ifMap = false
             break
         default:
             break;

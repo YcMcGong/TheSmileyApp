@@ -25,6 +25,10 @@ class CampViewController: UIViewController, CLLocationManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Set the mapView to jump to my current location
+        currentControlFlow.isFromCamp = true
+        
+        // Look for last saved GPS location
         let savedLat = UserDefaults.standard.double(forKey: "userLat")
         let savedLng = UserDefaults.standard.double(forKey: "userLng")
         

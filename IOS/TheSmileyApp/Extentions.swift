@@ -26,21 +26,21 @@ struct User {
     var name:String!
 }
 
+struct ControlFlow {
+    var ifMap:Bool = true
+    var lastLat:Double!
+    var lastLng:Double!
+    var lastZoom:Float!
+    var isFromCamp:Bool = true
+}
+
 var Places = [[String]]()
 var PlacesMarker = [UIImage]()
 class FriendList: NSObject {
     
     static var friendlist:[[String]] = []
     
-//    func initFriend(rows: Int){
-//        for _ in stride(from: 0, to: rows, by: 1){
-//            FriendList.friendlist.append([])
-//        }
-//    }
     func addFriend( newFriend:String, emailID: String, ExNum: String){
-//        FriendList.friendlist[0].append(newFriend) //Name
-//        FriendList.friendlist[1].append(emailID) //ID
-//        FriendList.friendlist[2].append(ExNum) //Explore Number
         let oneNewFriend:[String] = [newFriend, emailID, ExNum]
         FriendList.friendlist.append(oneNewFriend)
     }
@@ -72,6 +72,7 @@ class FriendList: NSObject {
 // create friendlist and user objects
 var Friends = FriendList()
 var currentUser = User()
+var currentControlFlow = ControlFlow()
 
 // extensions
 extension UIImage {

@@ -22,9 +22,12 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
     @IBOutlet weak var chooseButton: UIButton!
     @IBOutlet weak var backButton: UIButton!
     
+    @IBOutlet weak var ratingText: UILabel!
+    
     var lat:String!
     var lng:String!
     var upload_image:UIImage!
+    var rating = "0"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,6 +46,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
         let myPickerController = UIImagePickerController()
         myPickerController.delegate = self;
         myPickerController.sourceType = UIImagePickerControllerSourceType.photoLibrary
+        myPickerController.allowsEditing = true
         self.present(myPickerController, animated: true, completion: nil)
     }
 
@@ -101,6 +105,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
                     multipartFormData.append(self.lat.data(using: String.Encoding.isoLatin1)!, withName: "lat")
                     multipartFormData.append(self.lng.data(using: String.Encoding.isoLatin1)!, withName: "lng")
                     multipartFormData.append(intro.data(using: String.Encoding.isoLatin1)!, withName: "intro")
+                    multipartFormData.append(self.rating.data(using: String.Encoding.isoLatin1)!, withName: "rating")
                     
                     //Image Upload
                     multipartFormData.append(imageCoverData, withName: "cover", fileName: "cover.jpg", mimeType: "image/jpg")
@@ -144,6 +149,12 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
             self.errotIndicator.text = "Upload Failed, all fields are required"
             return false
         }
+    }
+    
+    @IBAction func ratingSlider(_ sender: UISlider) {
+        let rate = Int(sender.value)
+        rating = String(rate)
+        ratingText.text = rating
     }
     
 }
