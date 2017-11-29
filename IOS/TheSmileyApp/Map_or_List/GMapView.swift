@@ -55,10 +55,10 @@ class GMapView: UIViewController, GMSMapViewDelegate {
             let lng = Double(place[2])!
             let markerURL = markerUrlData(setUrl: place[0])
             marker.position = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-            marker.title = "test" //place[3]
+            marker.title = place[3]
             marker.userData = markerURL
             marker.groundAnchor = CGPoint(x:0.5, y:0.5)
-            marker.snippet = "Australia" //place[4]
+            marker.snippet = place[4]
 
             // Use makrer holder instead than loading everytime
             marker.icon = PlacesMarker[index]

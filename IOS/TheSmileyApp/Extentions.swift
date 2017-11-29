@@ -150,6 +150,9 @@ func requestPlaces(email:String, rule:String)
                     Places[i].append(place["url"].stringValue)
                     Places[i].append(place["lat"].stringValue)
                     Places[i].append(place["lng"].stringValue)
+                    Places[i].append(place["name"].stringValue)
+                    Places[i].append(place["discover"].stringValue)
+                    Places[i].append(place["rating"].stringValue)
                     // Update the image holder
                     PlacesMarker.append(LoadIMG(url: place["url"].stringValue))
                 }
