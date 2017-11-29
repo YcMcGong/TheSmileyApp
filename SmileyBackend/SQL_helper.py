@@ -61,6 +61,10 @@ def insert_new_user(User, cursor):
     cursor.execute("""INSERT INTO Users (exp_id, name, email, password, experience) VALUES (%s, %s, %s, %s, %s)""", 
         (exp_id, User.name, User.email, User.password, experience))
     cursor.execute("""COMMIT""")
+
+    # Follow the user him/herself by default
+    status = 100
+    add_follow(User.email, User.email, status, cursor)
     pass
 
 # Attractions
@@ -179,19 +183,19 @@ def read_all_friends_marker(email, cursor, ifNews = True):
     # Fetch all friend markersattractions
     friend_markers = cursor.fetchall()
 
-    # Fetch attractions created by the user itself
-    cursor.execute("""
-    SELECT marker, lat, lng, att_name as name, name as discover, score
-    FROM Users
-    INNER JOIN
-    (SELECT marker, lat, lng, name as att_name, score, email
-    FROM Attractions
-    WHERE email =  %s) AS TB1
-    ON Users.email = TB1.email
-    """,(flask_login.current_user.id,))
-    my_markers = cursor.fetchall()
+    # # Fetch attractions created by the user itself
+    # cursor.execute("""
+    # SELECT marker, lat, lng, att_name as name, name as discover, score
+    # FROM Users
+    # INNER JOIN
+    # (SELECT marker, lat, lng, name as att_name, score, email
+    # FROM Attractions
+    # WHERE email =  %s) AS TB1
+    # ON Users.email = TB1.email
+    # """,(flask_login.current_user.id,))
+    # my_markers = cursor.fetchall()
 
-    all_markers = friend_markers + my_markers
+    all_markers = friend_markers
 
     return all_markers
 
@@ -274,7 +278,9 @@ def show_all_friends(email, cursor):
     FROM Users
     INNER JOIN Friends
     ON Users.email = Friends.to_user_email
-    WHERE Friends.by_user_email = %s""", (email,))
+    WHERE Friends.by_user_email = %s
+    AND NOT Friends.to_user_email = %s""", (email, email))
+    # Because by default a user will follow him/herself, but it is not necessary to show on friendlist
 
     friendlists = cursor.fetchall()
 
@@ -293,14 +299,14 @@ class Like():
 
 def add_like(user_email, attraction_url, rating, cursor):
     if not fetch_like(user_email, attraction_url, cursor):
-        cursor.execute("""INSERT INTO Likes (user_email, attraction_url, rating) VALUES (%s, %s, %s)""",(user_email, attraction_url, rating))
+        cursor.execute("""INSERT INTO Likes (user_email, attraction_ID, rating) VALUES (%s, %s, %s)""",(user_email, attraction_url, rating))
         cursor.execute("""COMMIT""")
 
 def fetch_like(user_email, attraction_url, cursor):
     # Look up if a like exist
-    cursor.execute("""SELECT user_email, attraction_url, rating 
+    cursor.execute("""SELECT user_email, attraction_ID, rating 
     FROM Likes 
     WHERE user_email = %s 
-    AND attraction_url = %s""",(user_email, attraction_url))
+    AND attraction_ID = %s""",(user_email, attraction_url))
     data = cursor.fetchone()
     return data
