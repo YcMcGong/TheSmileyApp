@@ -23,13 +23,27 @@ class markerUrlData{
 class GMapView: UIViewController, GMSMapViewDelegate {
     
     var mapView: GMSMapView!
-    //    private var clusterManager: GMUClusterManager!
+    var cameraLat: Double!
+    var cameraLng: Double!
+    var cameraZoom: Float!
     
     override func loadView() {
-        // Create a GMSCameraPosition that tells the map to display the
-        // coordinate -33.86,151.20 at zoom level 6.
-        //        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 6.0)
-        let camera = GMSCameraPosition.camera(withLatitude: currentUser.userLat, longitude: currentUser.userLng, zoom: 14.0)
+        
+        // Decide if coming from Camp or from placeView
+        if currentControlFlow.isFromCamp{
+            cameraLat = currentUser.userLat
+            cameraLng = currentUser.userLng
+            cameraZoom = 14.0
+        }
+        
+        else{
+            cameraLat = currentControlFlow.lastLat
+            cameraLng = currentControlFlow.lastLng
+            cameraZoom = currentControlFlow.lastZoom
+        }
+        
+        // Create a GMSCameraPosition that tells the map to display the coordinate
+        let camera = GMSCameraPosition.camera(withLatitude: cameraLat, longitude: cameraLng, zoom: cameraZoom)
         let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
         mapView.isMyLocationEnabled = true;
         mapView.settings.myLocationButton = true
@@ -77,6 +91,15 @@ class GMapView: UIViewController, GMSMapViewDelegate {
     }
     
     func mapView(_ mapView: GMSMapView, didTapInfoWindowOf marker: GMSMarker) {
+        
+        // Save the current camera position
+        let target = mapView.camera.target
+        currentControlFlow.lastLat = target.latitude
+        currentControlFlow.lastLng = target.longitude
+        currentControlFlow.lastZoom = mapView.camera.zoom
+        currentControlFlow.isFromCamp = false
+        
+        // Open the Web Place View
         currentUser.PlaceToSee = (marker.userData as! markerUrlData).marker_url
         let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         let PlaceController = storyBoard.instantiateViewController(withIdentifier: "WebPlaceViewController") as! WebPlaceViewController
