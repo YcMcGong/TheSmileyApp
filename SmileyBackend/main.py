@@ -34,7 +34,12 @@ def connect_to_cloudsql():
 # cursor = db.cursor()
 # cursor.execute("""USE Smiley""") # Specifies the name of DB
 
-""" Login related---------------------------------------------------------"""
+"""
+#  ________________________________________
+# |Definition of the Login Class           |
+# |________________________________________|
+"""
+
 class Login(flask_login.UserMixin):
     
     def __init__(self):
@@ -52,6 +57,12 @@ def user_loader(email):
 @app.route('/', methods=['GET', 'POST'])
 def test():
     return jsonify({'one':1, 'two':2})
+
+"""
+#  ________________________________________
+# |User & Login Related Sessions           |
+# |________________________________________|
+"""
 
 @app.route('/user', methods=['GET', 'POST'])
 def user_login():
@@ -84,7 +95,7 @@ def user_login():
     else:
         return "", 400
 
-
+# Create User
 @app.route('/create_user', methods=['GET', 'POST'])
 def create_user():
     if request.method == 'POST':
@@ -125,6 +136,12 @@ def create_user():
     else:
         return "", 400
 
+"""
+#  ________________________________________
+# | Profile Session                        |
+# |________________________________________|
+"""
+
 @app.route('/profile', methods=['GET', 'POST'])
 @flask_login.login_required
 def get_profile():
@@ -141,6 +158,12 @@ def get_profile():
         return jsonify({'ID':found_user.exp_id, 'experience': found_user.experience, 'name': found_user.name, 'email': found_user.email})
     else:
         return "", 400
+
+"""
+#  ________________________________________
+# | Friend & Relationship Section          |
+# |________________________________________|
+"""
 
 @app.route('/friendlist', methods=['GET', 'POST', 'DELETE'])
 @flask_login.login_required
@@ -180,6 +203,12 @@ def get_friendlist():
     else:
         return "", 400
 
+
+"""
+#  ________________________________________
+# | Attraction & Map related Session       |
+# |________________________________________|
+"""
 # Map view
 @app.route('/map', methods=['GET', 'POST'])
 @flask_login.login_required
@@ -276,6 +305,11 @@ def upload_image_file(file):
 
     return public_url
 
+"""
+#  ________________________________________
+# | Liking section                         |
+# |________________________________________|
+"""
 # Liking 
 @app.route('/like', methods=['GET', 'POST'])
 @flask_login.login_required
@@ -284,6 +318,7 @@ def like_a_place():
         # Read Data
         attraction = request.form.get('attraction')
         like = request.form.get('like')
+        like = int(like)
         email = flask_login.current_user.id
 
         if attraction and like and email:
@@ -296,7 +331,23 @@ def like_a_place():
             return jsonify({'status': 'success'}), 201
 
         return "", 400
-        
+
+    elif request.method == 'GET':
+        # Read Attraction ID
+        attraction_ID = request.args.get('attraction')
+        db = connect_to_cloudsql()
+        cursor = db.cursor()
+        cursor.execute("""USE Smiley""") # Specifies the name of DB
+        data = fetch_like(flask_login.current_user.id, attraction_ID, cursor)
+        cursor.close()
+
+        if data:
+            return_data = {'rating': data[2]}
+        else:
+            return_data = {'rating': 0}
+
+        return jsonify(return_data)
+
     return "", 400
 
 """
