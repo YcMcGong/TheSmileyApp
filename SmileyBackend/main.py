@@ -252,7 +252,7 @@ def create_a_new_place_post():
         
         ID = marker
         email = flask_login.current_user.id
-        address, map_name = gps_to_address(float(lat), float(lng))
+        address, map_name, lat, lng = gps_to_address(float(lat), float(lng))
 
         # If the place already exist, use the name from google map
         if map_name != '_new':
@@ -281,19 +281,6 @@ def create_a_new_place_post():
     # return marker
 
 def get_date():
-    # today = datetime.datetime.today()
-
-    # # Zero padding dates
-    # if today.month<10:
-    #     month = '0'+str(today.month)
-    # else:
-    #     month = str(today.month)
-
-    # if today.day<10:
-    #     day = '0'+str(today.day)
-    # else:
-    #     day = str(today.day)
-    # date = str(today.year) + month + day
 
     date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return date
@@ -391,7 +378,7 @@ def render_place_data_template(place_info, reviews_data):
     
     # return render_template('profile.html', name = found_user.name, email = found_user.email, \
     # goal = found_user.goal, group = json.dumps(data))
-    reviews_data = reviews_data[1:]
+    reviews_data = reviews_data[0:-1] # Get rid of the earlist review, which is created by the explorer
     return render_template('place_template.html', place = place_info, reviews = reviews_data)
 
 # Table Setting Functions
@@ -429,7 +416,7 @@ def init_all_tables():
     # cover varchar(255),
     # lat double,
     # lng double,
-    # intro varchar(255),
+    # intro varchar(800),
     # score float,
     # address varchar(255),
     # email varchar(50),
@@ -465,7 +452,7 @@ def init_all_tables():
     # attraction_ID varchar(255),
     # cover_url varchar(255),
     # marker_url varchar(255),
-    # intro varchar(255),
+    # intro varchar(800),
     # rating float,
     # FOREIGN KEY (user_email) REFERENCES Users(email)
     # ON DELETE CASCADE ON UPDATE CASCADE,

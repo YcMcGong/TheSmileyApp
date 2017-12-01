@@ -4,3 +4,4 @@ six==1.10.0
 googlemaps==2.5.1
 Flask-SQLAlchemy==2.3.2
 PyMySQL==0.7.11
+python-google-places

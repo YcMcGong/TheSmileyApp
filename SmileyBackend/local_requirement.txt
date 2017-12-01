@@ -6,3 +6,4 @@ Flask-SQLAlchemy==2.3.2
 PyMySQL==0.7.11
 mysqlclient
 flask
+python-google-places

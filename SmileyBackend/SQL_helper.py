@@ -91,8 +91,8 @@ def insert_new_attraction(attraction, cursor):
             (%s, %s, %s, %s, %s, %s, %s)
             """,
             (attraction.email, found_attraction_ID, attraction.cover, attraction.marker, 
-            attraction.intro, int(attraction.score), attraction.date_created)
-        )
+            attraction.intro, int(attraction.rating), attraction.date_created)
+        ) # BUG MIGHT BE FIXED , COME BACK AND LOOK TMR
         
         cursor.execute("""
             UPDATE Attractions
