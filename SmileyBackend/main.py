@@ -44,7 +44,7 @@ class Login(flask_login.UserMixin):
     
     def __init__(self):
         self.exp_id = ''
-        self.experience = ''
+        self.experience = 0
     # pass
 
 @login_manager.user_loader
@@ -239,6 +239,7 @@ def create_a_new_place_post():
         lat = request.form.get('lat')
         lng = request.form.get('lng')
         intro = request.form.get('intro')
+        rating = request.form.get('rating')
         cover_file = request.files.get('cover')
         marker_file = request.files.get('marker')
 
@@ -246,7 +247,9 @@ def create_a_new_place_post():
         cover = upload_image_file(cover_file)
         # print(marker)
 
-        # score = flask_login.current_user.experience
+        # Calculate the score based on the user experience and the rating
+        score = int(float(flask_login.current_user.experience)/10.0 * (float(rating) + 10))
+        
         ID = marker
         email = flask_login.current_user.id
         address, map_name = gps_to_address(float(lat), float(lng))
@@ -265,7 +268,7 @@ def create_a_new_place_post():
         found_user = fetch_user(flask_login.current_user.id, cursor)
         score = found_user.experience
         # Create an attraction
-        attraction = Attraction(ID, name, marker, cover, lat, lng, intro, score, address, email, date_created)
+        attraction = Attraction(ID, name, marker, cover, lat, lng, intro, score, rating, address, email, date_created)
 
         insert_new_attraction(attraction, cursor)
         cursor.close()
@@ -278,20 +281,23 @@ def create_a_new_place_post():
     # return marker
 
 def get_date():
-    today = datetime.datetime.today()
+    # today = datetime.datetime.today()
 
-    # Zero padding dates
-    if today.month<10:
-        month = '0'+str(today.month)
-    else:
-        month = str(today.month)
+    # # Zero padding dates
+    # if today.month<10:
+    #     month = '0'+str(today.month)
+    # else:
+    #     month = str(today.month)
 
-    if today.day<10:
-        day = '0'+str(today.day)
-    else:
-        day = str(today.day)
-    date = str(today.year) + month + day
+    # if today.day<10:
+    #     day = '0'+str(today.day)
+    # else:
+    #     day = str(today.day)
+    # date = str(today.year) + month + day
+
+    date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return date
+
 
 def upload_image_file(file):
     # Upload the user-uploaded file to Google Cloud Storage and retrieve its
@@ -318,14 +324,22 @@ def like_a_place():
         # Read Data
         attraction = request.form.get('attraction')
         like = request.form.get('like')
-        like = int(like)
+        # like = int(like)
+
+        # Temporary Solution
+        if like == '1':
+            like = 2
+        else:
+            like = -1
+
         email = flask_login.current_user.id
 
         if attraction and like and email:
+            date_created = get_date()
             db = connect_to_cloudsql()
             cursor = db.cursor()
             cursor.execute("""USE Smiley""") # Specifies the name of DB
-            add_like(email, attraction, like, cursor)
+            add_like(email, attraction, like, date_created, cursor)
             cursor.close()
             db.close() # Close the cursor and db connection
             return jsonify({'status': 'success'}), 201
@@ -419,26 +433,27 @@ def init_all_tables():
     # score float,
     # address varchar(255),
     # email varchar(50),
-    # date_created int
+    # date_created DATETIME
     # )""")
     # # !!!
     # # A bug in the data_created, need further investigation
     # # !!!
 
     # cursor.execute("""CREATE TABLE Friends (
-    # by_user_email varchar(50),
-    # to_user_email varchar(50),
+    # by_user_email varchar(50) NOT NULL,
+    # to_user_email varchar(50) NOT NULL,
     # relation float,
     # FOREIGN KEY (by_user_email) REFERENCES Users(email)
     # ON DELETE CASCADE ON UPDATE CASCADE,
     # FOREIGN KEY (to_user_email) REFERENCES Users(email)
-    # ON DELETE CASCADE ON UPDATE CASCADE
-    # )""")
+    # ON DELETE CASCADE ON UPDATE CASCADE,
+    # UNIQUE (by_user_email, to_user_email) )""")
 
     # cursor.execute("""CREATE TABLE Likes (
     # user_email varchar(50),
     # attraction_ID varchar(255),
     # rating float,
+    # date_created DATETIME,
     # FOREIGN KEY (user_email) REFERENCES Users(email)
     # ON DELETE CASCADE ON UPDATE CASCADE,
     # FOREIGN KEY (attraction_ID) REFERENCES Attractions(ID)
@@ -454,7 +469,7 @@ def init_all_tables():
     # rating float,
     # FOREIGN KEY (user_email) REFERENCES Users(email)
     # ON DELETE CASCADE ON UPDATE CASCADE,
-    # date_created int,
+    # date_created DATETIME,
     # FOREIGN KEY (attraction_ID) REFERENCES Attractions(ID)
     # ON DELETE CASCADE ON UPDATE CASCADE
     # )""")
