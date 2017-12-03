@@ -23,32 +23,50 @@ def address_to_gps(address):
     lng = gps[0]['geometry']['location']['lng']
     return [lat, lng]
 
-def gps_to_address(Lat, Lng):
-    
+def gps_to_place_list(Lat, Lng):
     # Set up google places API
     google_places = GooglePlaces(API_KEY)
     # Search for place
-    query_result = google_places.nearby_search(lat_lng = {'lat': Lat, 'lng': Lng}, radius = 70,
+    query_result = google_places.nearby_search(lat_lng = {'lat': Lat, 'lng': Lng}, radius = 100,
     type = 'point_of_interest')
 
     # If found result within radius
-    if query_result:
-        place =  query_result.places[0]
-        name = place.name
-        place.get_details()
-        format_lat = float(place.geo_location['lat'])
-        format_lng = float(place.geo_location['lng'])
-        address = place.formatted_address
+    data = []
+    if query_result.places:
+        
+        for place in query_result.places:
+            
+            name = place.name
+            format_lat = float(place.geo_location['lat'])
+            format_lng = float(place.geo_location['lng'])
+            # place.get_details()
+            # address = place.formatted_address
+            data.append({'name': name, 'lat': format_lat, 'lng': format_lng})
 
     else:
-        name = '_new'
+        data = '_new'
 
-    return (address, name, format_lat, format_lng)
+    return data
+
 
 def hash_password(imput_password_string):
     SECRET = "imsosecret"    #change this if want to change hash function
     return hmac.new(SECRET,imput_password_string).hexdigest()
 
+
+def gps_to_address(Lat, Lng):
+    # Look up an address with reverse geocoding
+    # import googlemaps
+    gmaps = googlemaps.Client(key=API_KEY)
+    data = gmaps.reverse_geocode((Lat, Lng))
+    address = data[0]['formatted_address']
+    return address
+
+
+""" __________________________
+###| Legacy Code              |
+####__________________________|
+"""
 
 # def gps_to_address(Lat, Lng):
 #     # Look up an address with reverse geocoding
@@ -71,3 +89,27 @@ def hash_password(imput_password_string):
 #     else:
 #         name = '_new'
 #     return (address, name)
+
+
+
+# def gps_to_address(Lat, Lng):
+    
+#     # Set up google places API
+#     google_places = GooglePlaces(API_KEY)
+#     # Search for place
+#     query_result = google_places.nearby_search(lat_lng = {'lat': Lat, 'lng': Lng}, radius = 70,
+#     type = 'point_of_interest')
+
+#     # If found result within radius
+#     if query_result:
+#         place =  query_result.places[0]
+#         name = place.name
+#         place.get_details()
+#         format_lat = float(place.geo_location['lat'])
+#         format_lng = float(place.geo_location['lng'])
+#         address = place.formatted_address
+
+#     else:
+#         name = '_new'
+
+#     return (address, name, format_lat, format_lng)

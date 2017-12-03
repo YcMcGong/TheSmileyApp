@@ -63,7 +63,7 @@ def test():
 # |User & Login Related Sessions           |
 # |________________________________________|
 """
-
+# Login function
 @app.route('/user', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
@@ -94,6 +94,13 @@ def user_login():
 
     else:
         return "", 400
+
+# Logout function
+@app.route('/user_logout', methods=['GET'])
+def user_logout():
+    if request.method == 'GET':
+        logout_user()
+        return jsonify({'status': 'success'})
 
 # Create User
 @app.route('/create_user', methods=['GET', 'POST'])
@@ -206,7 +213,7 @@ def get_friendlist():
 
 """
 #  ________________________________________
-# | Attraction & Map related Session       |
+# | Map related Session                    |
 # |________________________________________|
 """
 # Map view
@@ -228,6 +235,12 @@ def get_map():
         return jsonify(data)
     else:
         return "", 400
+
+"""
+#  ________________________________________
+# | Attraction related Session             |
+# |________________________________________|
+"""
 
 # Attraction View
 @app.route('/attraction', methods=['GET', 'POST'])
@@ -252,11 +265,12 @@ def create_a_new_place_post():
         
         ID = marker
         email = flask_login.current_user.id
-        address, map_name, lat, lng = gps_to_address(float(lat), float(lng))
+        # address, map_name, lat, lng = gps_to_address(float(lat), float(lng))
+        address = gps_to_address(float(lat), float(lng))
 
-        # If the place already exist, use the name from google map
-        if map_name != '_new':
-            name = map_name
+        # # If the place already exist, use the name from google map
+        # if map_name != '_new':
+        #     name = map_name
 
         date_created = get_date()
 
@@ -298,6 +312,23 @@ def upload_image_file(file):
 
     return public_url
 
+"""
+#  ________________________________________
+# | Location Service section               |
+# |________________________________________|
+"""
+# Return the places nearby to the front end for selection
+@app.route('/selectPlacesNearby', methods=['GET'])
+def get_list_of_places_near_a_coordinate():
+    if request.method == 'GET':
+        lat = request.args.get('lat')
+        lng = request.args.get('lng')
+        place_list = gps_to_place_list(lat, lng)
+        if place_list != "_new":
+            return jsonify(place_list)
+        else:
+            return "", 400
+        
 """
 #  ________________________________________
 # | Liking section                         |

@@ -160,7 +160,7 @@ def read_all_friends_marker(email, cursor, ifNews = True):
                     Reviews
                     NATURAL JOIN
                         (
-                            SELECT attraction_ID, MAX(date_created) AS date_review, AVG(rating) AS friend_rating
+                            SELECT attraction_ID, MAX(date_created) AS date_review, ROUND(AVG(rating)) AS friend_rating
                             FROM 
                                 Reviews
                                 INNER JOIN Friends
@@ -196,7 +196,7 @@ def read_all_friends_marker(email, cursor, ifNews = True):
                     Reviews
                     NATURAL JOIN
                         (
-                            SELECT attraction_ID, MIN(date_created) AS date_review, AVG(rating) AS friend_rating
+                            SELECT attraction_ID, MIN(date_created) AS date_review, ROUND(AVG(rating)) AS friend_rating
                             FROM 
                                 Reviews
                                 INNER JOIN Friends
