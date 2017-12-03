@@ -68,24 +68,33 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate, U
         
         if let URL = info[UIImagePickerControllerReferenceURL] as? URL
         {
+            print("THIS _____________")
             print(URL)
             let opts = PHFetchOptions()
             opts.fetchLimit = 1
             let assets = PHAsset.fetchAssets(withALAssetURLs: [URL], options: opts)
-            let asset = assets[0]
             
-            if (asset.location?.coordinate.latitude != nil)&&(asset.location?.coordinate.longitude != nil)
+            if assets.count != 0
             {
-                self.lat = String(describing: asset.location!.coordinate.latitude)
-                self.lng = String(describing: asset.location!.coordinate.longitude)
-                upload_image = info[UIImagePickerControllerOriginalImage] as? UIImage
-                IMView.image = upload_image
-                self.errotIndicator.textColor = UIColor.green
-                self.errotIndicator.text = "Image is valid"
+                let asset = assets[0]
+                
+                if (asset.location?.coordinate.latitude != nil)&&(asset.location?.coordinate.longitude != nil)
+                {
+                    self.lat = String(describing: asset.location!.coordinate.latitude)
+                    self.lng = String(describing: asset.location!.coordinate.longitude)
+                    upload_image = info[UIImagePickerControllerOriginalImage] as? UIImage
+                    IMView.image = upload_image
+                    self.errotIndicator.textColor = UIColor.green
+                    self.errotIndicator.text = "Image is valid"
+                }
+                else{
+                    self.errotIndicator.textColor = UIColor.red
+                    self.errotIndicator.text = "Image does not contain GPS info"
+                }
             }
+            
             else{
-                self.errotIndicator.textColor = UIColor.red
-                self.errotIndicator.text = "Image does not contain GPS info"
+                self.errotIndicator.text = "Need to allow access for photo library"
             }
         }
         self.dismiss(animated: true, completion: nil)

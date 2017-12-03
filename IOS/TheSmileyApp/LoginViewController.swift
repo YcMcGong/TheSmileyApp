@@ -9,6 +9,7 @@
 import UIKit
 import Alamofire
 import SwiftyJSON
+import Photos
 
 class LoginViewController: UIViewController {
 
@@ -19,6 +20,7 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.hideKeyboard()
+        
         // Read the stored email and psw
         do {
             self.EmailText.text = UserDefaults.standard.string(forKey: "smileyEmail")
