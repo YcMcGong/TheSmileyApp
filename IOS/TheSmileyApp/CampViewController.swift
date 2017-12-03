@@ -40,9 +40,6 @@ class CampViewController: UIViewController, CLLocationManagerDelegate {
             self.enterSmileyButton.isEnabled = false //Hold until location aquired.
         }
         
-//        // Request User Infomation
-//        requestProfileInfo(email:currentUser.email)
-        
         // Request Friendlist and Places
         requestFriendList(email: currentUser.email)
         requestPlaces(email: currentUser.email, rule:"default")
@@ -87,4 +84,9 @@ class CampViewController: UIViewController, CLLocationManagerDelegate {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    @IBAction func logoutButton(_ sender: Any) {
+        Alamofire.request("https://thatsmileycompany.com/user_logout", method: .get)
+    }
+    
 }
