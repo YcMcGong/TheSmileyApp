@@ -375,6 +375,7 @@ def add_follow(by_email, to_email, status, cursor):
 
 def delete_follow(by_email, to_email, cursor):
     cursor.execute("""DELETE FROM Friends WHERE by_user_email = %s AND to_user_email = %s""",(by_email, to_email))
+    cursor.execute("""DELETE FROM Friends WHERE by_user_email = %s AND to_user_email = %s""",(to_email, by_email))
     cursor.execute("""COMMIT""")
 
 def show_all_friends(email, cursor):
