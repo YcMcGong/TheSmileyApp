@@ -46,6 +46,7 @@ class SignupViewController: UIViewController {
                 case .success:
                     print("Validation Successful")
                     currentUser.email = email
+                    currentUser.name = name
                     currentUser.login = true
                     
                     //Login Success, now store the email and password in app
